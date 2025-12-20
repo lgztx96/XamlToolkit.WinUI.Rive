@@ -1,0 +1,20 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="ARM64" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Docs/">
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/DotNet/">
+    <Project Path="dotnet/XamlToolkit.WinUI.Rive.Interop.csproj" />
+  </Folder>
+  <Folder Name="/NuGet/">
+    <File Path="nuget/XamlToolkit.WinUI.Rive.Managed.targets" />
+    <File Path="nuget/XamlToolkit.WinUI.Rive.Native.targets" />
+    <File Path="nuget/XamlToolkit.WinUI.Rive.nuspec" />
+  </Folder>
+  <Project Path="XamlToolkit.WinUI.Rive/XamlToolkit.WinUI.Rive.vcxproj" Id="4eb18ec2-0814-4e6c-ae83-12243d3a6a27" />
+</Solution>
