@@ -1,0 +1,31 @@
+namespace XamlToolkit.WinUI.Rive
+{
+    unsealed runtimeclass StateMachineInput : Microsoft.UI.Xaml.DependencyObject
+    {
+        StateMachineInput();
+        String Target;
+    }
+
+    [contentproperty("Value")]
+    runtimeclass BoolInput : StateMachineInput
+    {
+        BoolInput();
+
+        Windows.Foundation.IReference<Boolean> Value;
+    }
+
+    [contentproperty("Value")]
+    runtimeclass NumberInput : StateMachineInput
+    {
+        NumberInput();
+
+        Windows.Foundation.IReference<Double> Value;
+    }
+
+    runtimeclass TriggerInput : StateMachineInput
+    {
+        TriggerInput();
+
+        void Fire();
+    }
+}

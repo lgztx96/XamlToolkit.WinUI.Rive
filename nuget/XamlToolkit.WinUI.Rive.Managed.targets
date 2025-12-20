@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<PropertyGroup>
+		<WinUIToolkitWinMDPath>$(MSBuildThisFileDirectory)..\..\lib\native\XamlToolkit.WinUI.Rive.winmd</WinUIToolkitWinMDPath>
+		<WinUIToolkitWinMDImplementationDllName>XamlToolkit.WinUI.Rive.dll</WinUIToolkitWinMDImplementationDllName>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<WinUIToolkitPlatform Condition="$(RuntimeIdentifier.EndsWith('-x64'))">x64</WinUIToolkitPlatform>
+		<WinUIToolkitPlatform Condition="$(RuntimeIdentifier.EndsWith('-x86'))">x86</WinUIToolkitPlatform>
+		<WinUIToolkitPlatform Condition="$(RuntimeIdentifier.EndsWith('-arm64'))">arm64</WinUIToolkitPlatform>
+		<WinUIToolkitPlatform Condition="$(RuntimeIdentifier.EndsWith('-arm'))">arm</WinUIToolkitPlatform>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(WinUIToolkitPlatform)' == ''">
+		<WinUIToolkitPlatform Condition="'$(Platform)' == 'Win32'">x86</WinUIToolkitPlatform>
+		<WinUIToolkitPlatform Condition="'$(Platform)' != 'Win32'">$(Platform)</WinUIToolkitPlatform>
+		<WinUIToolkitPlatform Condition="'$(Platform)' == 'AnyCPU'"></WinUIToolkitPlatform>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<WinUIToolkitWarnNoPlatform Condition="'$(WinUIToolkitWarnNoPlatform)' == ''">true</WinUIToolkitWarnNoPlatform>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<WindowsMetadataReference Include="$(WinUIToolkitWinMDPath)" Implementation="$(WinUIToolkitWinMDImplementationDllName)" />
+		<SDKReference Include="Microsoft.VCLibs.Desktop, Version=14.0" />
+	</ItemGroup>
+
+	<Target Name="WinUIToolkitWarnNoPlatform" BeforeTargets="BeforeBuild" Condition="'$(WinUIToolkitPlatform)' == '' and '$(WinUIToolkitWarnNoPlatform)' == 'true'">
+		<Warning
+			Code="DYXML0001"
+			Text="'XamlToolkit.WinUI.Rive.dll' cannot be referenced correctly, because the project is being built as 'AnyCPU'. Please specify a specific platform (eg. 'x64'), publish with a RID (runtime identifier, eg. 'win-x64'), or set 'WinUIToolkitWarnNoPlatform' to suppress this error (note: you'll need to manually handle referencing XamlToolkit.WinUI.Rive.dll in that case)." />
+	</Target>
+
+</Project>

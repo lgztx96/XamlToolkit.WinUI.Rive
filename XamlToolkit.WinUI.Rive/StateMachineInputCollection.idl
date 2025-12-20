@@ -1,0 +1,8 @@
+namespace XamlToolkit.WinUI.Rive
+{
+    [default_interface]
+    runtimeclass StateMachineInputCollection : Microsoft.UI.Xaml.DependencyObjectCollection
+    {
+        StateMachineInputCollection();
+    }
+}

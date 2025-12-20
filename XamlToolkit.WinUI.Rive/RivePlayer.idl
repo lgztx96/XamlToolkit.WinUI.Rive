@@ -1,0 +1,28 @@
+import "StateMachineInputCollection.idl";
+
+namespace XamlToolkit.WinUI.Rive
+{
+    [contentproperty("StateMachineInputCollection")]
+    runtimeclass RivePlayer : Microsoft.UI.Xaml.Controls.Control
+    {
+        RivePlayer();
+
+        static Microsoft.UI.Xaml.DependencyProperty SourceProperty{ get; };
+        String Source;
+
+        static Microsoft.UI.Xaml.DependencyProperty ArtboardProperty{ get; };
+        String Artboard;
+
+        static Microsoft.UI.Xaml.DependencyProperty StateMachineProperty{ get; };
+        String StateMachine;
+
+        static Microsoft.UI.Xaml.DependencyProperty StateMachineInputCollectionProperty{ get; };
+        StateMachineInputCollection StateMachineInputCollection;
+
+        void SetBool(String name, Boolean value);
+
+        void SetNumber(String name, Single value);
+
+        void FireTrigger(String name);
+    }
+}
