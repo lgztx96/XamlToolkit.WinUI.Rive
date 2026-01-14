@@ -25,12 +25,12 @@
 		<file target="build\native\XamlToolkit.WinUI.Rive.Native.targets"                          src="XamlToolkit.WinUI.Rive.Native.targets" />
 		<file target="build\net8.0-windows10.0.26100.0\XamlToolkit.WinUI.Rive.Native.targets"      src="XamlToolkit.WinUI.Rive.Managed.targets" />
 
-		<file target="lib\native\XamlToolkit.WinUI.Rive.winmd"                              src="..\x64\Release\XamlToolkit.WinUI.Rive\XamlToolkit.WinUI.Rive.winmd" />
+		<file target="lib\native\XamlToolkit.WinUI.Rive.winmd"                              src="..\x64\Release\XamlToolkit.WinUI.Rive.winmd" />
 
-		<file target="runtimes\win-x86\native\XamlToolkit.WinUI.Rive.dll"                   src="..\Release\XamlToolkit.WinUI.Rive\XamlToolkit.WinUI.Rive.dll" />
-		<file target="runtimes\win-x64\native\XamlToolkit.WinUI.Rive.dll"                   src="..\x64\Release\XamlToolkit.WinUI.Rive\XamlToolkit.WinUI.Rive.dll" />
-		<file target="runtimes\win-arm64\native\XamlToolkit.WinUI.Rive.dll"                 src="..\arm64\Release\XamlToolkit.WinUI.Rive\XamlToolkit.WinUI.Rive.dll" />
+		<file target="runtimes\win-x86\native\XamlToolkit.WinUI.Rive.dll"                   src="..\Release\XamlToolkit.WinUI.Rive.dll" />
+		<file target="runtimes\win-x64\native\XamlToolkit.WinUI.Rive.dll"                   src="..\x64\Release\XamlToolkit.WinUI.Rive.dll" />
+		<file target="runtimes\win-arm64\native\XamlToolkit.WinUI.Rive.dll"                 src="..\arm64\Release\XamlToolkit.WinUI.Rive.dll" />
 
-		<file target="lib\net8.0-windows10.0.26100.0\XamlToolkit.WinUI.Rive.Interop.dll" src="..\dotnet\XamlToolkit.WinUI.Rive\bin\Release\net8.0-windows10.0.26100.0\XamlToolkit.WinUI.Rive.Interop.dll" />
+		<file target="lib\net8.0-windows10.0.26100.0\XamlToolkit.WinUI.Rive.Interop.dll" src="..\dotnet\bin\Release\net8.0-windows10.0.26100.0\XamlToolkit.WinUI.Rive.Interop.dll" />
 	</files>
 </package>
