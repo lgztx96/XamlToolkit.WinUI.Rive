@@ -90,7 +90,7 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
             {
                 auto now = std::chrono::high_resolution_clock::now();
                 float dt = std::chrono::duration<float>(now - _lastFrameTime).count();
-                m_lastFrameTime = now;
+                _lastFrameTime = now;
 
                 if (!TryRenderFrame(dt))
                 {
