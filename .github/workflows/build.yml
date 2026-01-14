@@ -1,0 +1,77 @@
+﻿name: Build XamlToolkit.WinUI.Rive
+
+on:
+  release:
+    types: [ published ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        arch: [ x86, x64, arm64 ]
+
+    env:
+      SOLUTION_FILE: XamlToolkit.WinUI.Rive.slnx
+
+    steps:
+      - name: Checkout source (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
+
+      - name: Download prebuilt Rive libraries
+        shell: pwsh
+        run: |
+          $arch = "${{ matrix.arch }}"
+          $url = "https://github.com/lgztx96/XamlToolkit.WinUI.Rive/releases/download/v2025.12.21-rive-prebuilt/rive-$arch.zip"
+          $destDir = "rive-runtime-libs/$arch/release"
+          $zipPath = "$destDir/rive-$arch.zip"
+
+          New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+
+          Write-Host "Downloading $url ..."
+
+          Invoke-WebRequest -Uri $url -OutFile $zipPath
+
+          Expand-Archive -Path $zipPath -DestinationPath $destDir -Force -Verbose
+
+      - name: Restore NuGet packages
+        shell: pwsh
+        run: |
+          msbuild -t:restore ${{ env.SOLUTION_FILE }} -p:RestorePackagesConfig=true
+
+      - name: Build solution
+        shell: pwsh
+        run: |
+          msbuild ${{ env.SOLUTION_FILE }} `
+            /p:Configuration=Release `
+            /p:Platform=${{ matrix.arch }} `
+            /m
+
+      - name: Package artifacts
+        shell: pwsh
+        run: |
+          mkdir package
+          if ("${{ matrix.arch }}" -eq "x86") {
+            $outputPath = "Release"
+          } else {
+            $outputPath = "${{ matrix.arch }}\Release"
+          }
+          Compress-Archive -Path "$outputPath\*" -DestinationPath "package/XamlToolkit.WinUI.Rive-${{ matrix.arch }}.zip"
+
+      - name: Upload artifacts to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: package/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
