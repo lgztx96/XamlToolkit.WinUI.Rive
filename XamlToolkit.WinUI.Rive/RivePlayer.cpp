@@ -104,7 +104,7 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		{
 			// A source file is currently loading async. Don't set this input until it completes.
 			_deferredSMInputsDuringAsyncSourceLoad->emplace_back(
-				InputCmd{ .name = utf8Name, .kind = InputCmd::Kind::Bool, .b = value });
+				InputCommand{ .name = utf8Name, .kind = InputCommand::Kind::Bool, .boolValue = value });
 		}
 		else
 		{
@@ -119,7 +119,7 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		{
 			// A source file is currently loading async. Don't set this input until it completes.
 			_deferredSMInputsDuringAsyncSourceLoad->emplace_back(
-				InputCmd{ .name = utf8Name, .kind = InputCmd::Kind::Number, .f = value });
+				InputCommand{ .name = utf8Name, .kind = InputCommand::Kind::Number, .numberValue = value });
 		}
 		else
 		{
@@ -134,7 +134,7 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		{
 			// A source file is currently loading async. Don't set this input until it completes.
 			_deferredSMInputsDuringAsyncSourceLoad->emplace_back(
-				InputCmd{ .name = utf8Name, .kind = InputCmd::Kind::Trigger });
+				InputCommand{ .name = utf8Name, .kind = InputCommand::Kind::Trigger });
 		}
 		else
 		{
@@ -170,7 +170,7 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		auto playerImpl = winrt::get_self<RivePlayer>(player);
 		auto newSourceName = winrt::unbox_value<winrt::hstring>(e.NewValue());
 		// Clear the current Scene while we wait for the new one to load.
-		playerImpl->_renderer->Clear();
+		playerImpl->_renderer->ClearCommands();
 		++playerImpl->_currentSourceToken;  // Cancel any other active async source load operation.
 		// Defer state machine inputs here until the new file is loaded.
 		playerImpl->_deferredSMInputsDuringAsyncSourceLoad = std::make_unique<std::vector<Command>>();

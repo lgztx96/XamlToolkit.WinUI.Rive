@@ -14,70 +14,70 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 
     bool RiveRenderer::Initialize(winrt::com_ptr<ISwapChainPanelNative> const& panel, int width, int height)
     {
-        m_panelNative = panel;
-        m_viewWidth = width;
-        m_viewHeight = height;
+        _panelNative = panel;
+        _viewWidth = width;
+        _viewHeight = height;
 
         CreateDeviceResources();
-        m_lastFrameTime = std::chrono::high_resolution_clock::now();
+        _lastFrameTime = std::chrono::high_resolution_clock::now();
         return true;
     }
 
     void RiveRenderer::Start()
     {
-        if (!m_renderThread.joinable())
+        if (!_renderThread)
         {
-            m_renderThread = std::jthread(std::bind_front(&RiveRenderer::RenderLoop, this));
+            _renderThread = std::make_unique<std::jthread>(std::bind_front(&RiveRenderer::RenderLoop, this));
         }
     }
 
     void RiveRenderer::Stop()
     {
-        if (m_renderThread.joinable())
+        if (_renderThread)
         {
-            m_renderThread.request_stop();
-            m_renderThread.join();
+            _renderThread->request_stop();
+            _renderThread.reset();
         }
     }
 
-    void RiveRenderer::Clear() 
+    void RiveRenderer::ClearCommands() 
     {
-        std::lock_guard<std::mutex> lock(m_commandsMutex);
-        while (!m_commands.empty()) 
+        std::lock_guard<std::mutex> lock(_commandsMutex);
+        while (!_commands.empty()) 
         {
-            m_commands.pop();
+            _commands.pop();
         }
     }
 
-    void RiveRenderer::Pause() { m_paused = true; }
-    void RiveRenderer::Resume() { m_paused = false; }
+    void RiveRenderer::Pause() { _paused = true; }
+    void RiveRenderer::Resume() { _paused = false; }
 
-    void RiveRenderer::Resize(int w, int h) { Enqueue(ResizeCmd{ w, h }); }
-    void RiveRenderer::LoadFileData(std::vector<uint8_t> data) { Enqueue(LoadFileCmd{ data }); }
+    void RiveRenderer::Resize(int width, int height) { Enqueue(ResizeViewCommand{ width, height }); }
+    void RiveRenderer::LoadFileData(std::vector<uint8_t> data) { Enqueue(LoadRivCommand{ data }); }
     void RiveRenderer::SelectArtboard(std::string_view name) { Enqueue(SelectArtboardCmd{ std::string(name) }); }
     void RiveRenderer::SelectStateMachine(std::string_view name) { Enqueue(SelectStateMachineCmd{ std::string(name) }); }
 
     void RiveRenderer::SetBoolInput(std::string_view n, bool v) 
     { 
-        Enqueue(InputCmd{ .name = std::string(n), .kind = InputCmd::Kind::Bool, .b = v });
+        Enqueue(InputCommand{ .name = std::string(n), .kind = InputCommand::Kind::Bool, .boolValue = v });
     }
     void RiveRenderer::SetNumberInput(std::string_view n, float v)
     {
-        Enqueue(InputCmd{ .name = std::string(n), .kind = InputCmd::Kind::Number, .f = v });
+        Enqueue(InputCommand{ .name = std::string(n), .kind = InputCommand::Kind::Number, .numberValue = v });
     }
     void RiveRenderer::FireTrigger(std::string_view n)
     {
-        Enqueue(InputCmd{ .name = std::string(n), .kind = InputCmd::Kind::Trigger });
+        Enqueue(InputCommand{ .name = std::string(n), .kind = InputCommand::Kind::Trigger });
     }
 
-    void RiveRenderer::PointerMove(float x, float y) { Enqueue(PointerCmd{ x, y, PointerCmd::Move }); }
-    void RiveRenderer::PointerDown(float x, float y) { Enqueue(PointerCmd{ x, y, PointerCmd::Down }); }
-    void RiveRenderer::PointerUp(float x, float y) { Enqueue(PointerCmd{ x, y, PointerCmd::Up }); }
+    void RiveRenderer::PointerMove(float x, float y) { Enqueue(PointerCommand{ x, y, PointerCommand::Kind::Move }); }
+    void RiveRenderer::PointerDown(float x, float y) { Enqueue(PointerCommand{ x, y, PointerCommand::Kind::Down }); }
+    void RiveRenderer::PointerUp(float x, float y) { Enqueue(PointerCommand{ x, y, PointerCommand::Kind::Up }); }
 
     void RiveRenderer::Enqueue(Command&& cmd)
     {
-        std::lock_guard<std::mutex> lock(m_commandsMutex);
-        m_commands.emplace(cmd);
+        std::unique_lock<std::mutex> lock(_commandsMutex);
+        _commands.emplace(cmd);
     }
 
     void RiveRenderer::RenderLoop(std::stop_token token)
@@ -86,10 +86,10 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
         {
             ProcessCommands();
 
-            if (!m_paused)
+            if (!_paused)
             {
                 auto now = std::chrono::high_resolution_clock::now();
-                float dt = std::chrono::duration<float>(now - m_lastFrameTime).count();
+                float dt = std::chrono::duration<float>(now - _lastFrameTime).count();
                 m_lastFrameTime = now;
 
                 if (!TryRenderFrame(dt))
@@ -106,55 +106,55 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
     {
         std::queue<Command> localQueue;
         {
-            std::lock_guard<std::mutex> lock(m_commandsMutex);
-            localQueue.swap(m_commands);
+            std::unique_lock<std::mutex> lock(_commandsMutex);
+            localQueue.swap(_commands);
         }
 
         while (!localQueue.empty())
         {
-            auto cmd = std::move(localQueue.front());
-            localQueue.pop();
-
+            const auto& cmd = localQueue.front();
+           
             std::visit([this](auto&& c) {
                 using T = std::decay_t<decltype(c)>;
-                if constexpr (std::is_same_v<T, ResizeCmd>)
+                if constexpr (std::is_same_v<T, ResizeViewCommand>)
                 {
-                    m_viewWidth = c.w;
-                    m_viewHeight = c.h;
-                    m_renderTarget.reset();
-                    if (m_swapChain) m_swapChain->ResizeBuffers(2, c.w, c.h, DXGI_FORMAT_B8G8R8A8_UNORM, 0);
-                    m_layoutDirty = true;
+                    _viewWidth = c.width;
+                    _viewHeight = c.height;
+                    _renderTarget.reset();
+                    if (_swapChain) _swapChain->ResizeBuffers(2, c.width, c.height, DXGI_FORMAT_B8G8R8A8_UNORM, 0);
+                    _layoutDirty = true;
                 }
-                else if constexpr (std::is_same_v<T, LoadFileCmd>)
+                else if constexpr (std::is_same_v<T, LoadRivCommand>)
                 {
                     CreateRiveFile(c.data);
                 }
                 else if constexpr (std::is_same_v<T, SelectArtboardCmd>)
                 {
-                    if (m_file) {
-                        m_artboard = m_file->artboardNamed(c.name);
-                        if (m_artboard) UpdateSceneAfterArtboardChange();
+                    if (_rivFile) {
+                        _artboard = _rivFile->artboardNamed(c.name);
+                        if (_artboard) OnArtboardChanged();
                     }
                 }
                 else if constexpr (std::is_same_v<T, SelectStateMachineCmd>)
                 {
-                    if (m_artboard) {
-                        auto sm = m_artboard->stateMachineNamed(c.name);
-                        if (sm) {
-                            m_scene = std::move(sm);
-                            m_activeStateMachine = static_cast<rive::StateMachineInstance*>(m_scene.get());
+                    if (_artboard) {
+                        if (auto sm = _artboard->stateMachineNamed(c.name)) {
+                            _scene = std::move(sm);
+                            _activeStateMachine = static_cast<rive::StateMachineInstance*>(_scene.get());
                         }
                     }
                 }
-                else if constexpr (std::is_same_v<T, PointerCmd>)
+                else if constexpr (std::is_same_v<T, PointerCommand>)
                 {
                     BroadcastPointer(c);
                 }
-                else if constexpr (std::is_same_v<T, InputCmd>)
+                else if constexpr (std::is_same_v<T, InputCommand>)
                 {
                     ApplyInput(c);
                 }
                 }, cmd);
+
+            localQueue.pop();
         }
     }
 
@@ -163,17 +163,17 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
         winrt::check_hresult(D3D11CreateDevice(
             nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr,
             D3D11_CREATE_DEVICE_BGRA_SUPPORT, nullptr, 0,
-            D3D11_SDK_VERSION, m_device.put(), nullptr, m_context.put()));
+            D3D11_SDK_VERSION, _device.put(), nullptr, _context.put()));
 
         winrt::com_ptr<IDXGIDevice> dxgiDevice;
-        m_device->QueryInterface(dxgiDevice.put());
+        _device->QueryInterface(dxgiDevice.put());
         winrt::com_ptr<IDXGIAdapter> adapter;
         dxgiDevice->GetAdapter(adapter.put());
-        adapter->GetParent(IID_PPV_ARGS(m_factory.put()));
+        adapter->GetParent(IID_PPV_ARGS(_factory.put()));
 
         DXGI_SWAP_CHAIN_DESC1 desc{};
-        desc.Width = m_viewWidth;
-        desc.Height = m_viewHeight;
+        desc.Width = _viewWidth;
+        desc.Height = _viewHeight;
         desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
         desc.BufferCount = 2;
         desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -181,148 +181,164 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
         desc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
         desc.SampleDesc.Count = 1;
 
-        winrt::check_hresult(m_factory->CreateSwapChainForComposition(m_device.get(), &desc, nullptr, m_swapChain.put()));
-        winrt::check_hresult(m_panelNative->SetSwapChain(m_swapChain.get()));
+        winrt::check_hresult(_factory->CreateSwapChainForComposition(_device.get(), &desc, nullptr, _swapChain.put()));
+        winrt::check_hresult(_panelNative->SetSwapChain(_swapChain.get()));
 
-        m_renderContext = rive::gpu::RenderContextD3DImpl::MakeContext(m_device.get(), m_context.get(), {});
-        m_renderer = std::make_unique<rive::RiveRenderer>(m_renderContext.get());
+        _renderContext = rive::gpu::RenderContextD3DImpl::MakeContext(_device.get(), _context.get(), {});
+        _renderer = std::make_unique<rive::RiveRenderer>(_renderContext.get());
     }
 
     void RiveRenderer::HandleDeviceLost()
     {
-        m_renderTarget.reset();
-        m_renderer.reset();
-        m_renderContext.reset();
-        m_swapChain = nullptr;
-        m_context = nullptr;
-        m_device = nullptr;
-        m_factory = nullptr;
+        _renderTarget.reset();
+        _renderer.reset();
+        _renderContext.reset();
+        _swapChain = nullptr;
+        _context = nullptr;
+        _device = nullptr;
+        _factory = nullptr;
 
         CreateDeviceResources();
 
-        if (m_file && m_artboard)
+        if (_rivFile && _artboard)
         {
-            UpdateSceneAfterArtboardChange();
-            m_layoutDirty = true;
+            OnArtboardChanged();
+            _layoutDirty = true;
         }
     }
 
     bool RiveRenderer::TryRenderFrame(float dt)
     {
-        if (!m_artboard || !m_scene || !m_swapChain || !m_renderContext) return true;
+        if (!_artboard || !_scene || !_swapChain || !_renderContext) return true;
 
-        if (!m_renderTarget)
+        if (!_renderTarget)
         {
-            m_renderTarget = m_renderContext->static_impl_cast<rive::gpu::RenderContextD3DImpl>()->makeRenderTarget(m_viewWidth, m_viewHeight);
+            _renderTarget = _renderContext->static_impl_cast<rive::gpu::RenderContextD3DImpl>()->makeRenderTarget(_viewWidth, _viewHeight);
         }
 
-        if (m_layoutDirty)
+        if (_layoutDirty)
         {
-            m_viewTransform = rive::computeAlignment(rive::Fit::contain, rive::Alignment::center,
-                { 0, 0, (float)m_viewWidth, (float)m_viewHeight }, m_artboard->bounds());
-            m_layoutDirty = false;
+            _viewTransform = rive::computeAlignment(
+                rive::Fit::contain, 
+                rive::Alignment::center,
+                rive::AABB{ 0, 0, static_cast<float>(_viewWidth), static_cast<float>(_viewHeight) }, 
+                _artboard->bounds());
+            _layoutDirty = false;
         }
 
         winrt::com_ptr<ID3D11Texture2D> backBuffer;
-        HRESULT hr = m_swapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.put()));
+        HRESULT hr = _swapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.put()));
         if (FAILED(hr)) return false;
 
-        m_renderTarget->setTargetTexture(backBuffer.get());
+        _renderTarget->setTargetTexture(backBuffer.get());
 
-        m_renderContext->beginFrame({ .renderTargetWidth = (uint32_t)m_viewWidth,
-                                     .renderTargetHeight = (uint32_t)m_viewHeight,
-                                     .clearColor = 0xff404040 });
+        _renderContext->beginFrame({ .renderTargetWidth = static_cast<uint32_t>(_viewWidth),
+                                     .renderTargetHeight = static_cast<uint32_t>(_viewHeight),
+                                     .clearColor = 0x00404040 });
 
-        m_scene->advanceAndApply(dt);
+        _scene->advanceAndApply(dt);
 
-        m_renderer->save();
-        m_renderer->transform(m_viewTransform);
-        m_artboard->draw(m_renderer.get());
-        m_renderer->restore();
+        _renderer->save();
+        _renderer->transform(_viewTransform);
+        _artboard->draw(_renderer.get());
+        _renderer->restore();
 
-        m_renderContext->flush({ .renderTarget = m_renderTarget.get() });
-        m_renderTarget->setTargetTexture(nullptr);
+        _renderContext->flush({ .renderTarget = _renderTarget.get() });
+        _renderTarget->setTargetTexture(nullptr);
 
-        hr = m_swapChain->Present(1, 0);
-        return SUCCEEDED(hr) || hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET;
+        hr = _swapChain->Present(1, 0);
+        if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
+            return false;
+
+        return SUCCEEDED(hr);
     }
 
-    void RiveRenderer::CreateRiveFile(const std::span<uint8_t> data)
+    void RiveRenderer::CreateRiveFile(std::span<const uint8_t> data)
     {
-        m_file = rive::File::import(data, m_renderContext.get());
-        if (m_file)
+        _rivFile = rive::File::import(data, _renderContext.get());
+        if (_rivFile)
         {
-            m_artboard = m_file->artboardDefault() ? m_file->artboardDefault()->instance() : nullptr;
-            UpdateSceneAfterArtboardChange();
+            _artboard = _rivFile->artboardDefault() ? _rivFile->artboardDefault()->instance() : nullptr;
+            OnArtboardChanged();
         }
     }
 
-    void RiveRenderer::UpdateSceneAfterArtboardChange()
+    void RiveRenderer::OnArtboardChanged()
     {
-        if (!m_artboard) return;
+        if (!_artboard) return;
 
         std::unique_ptr<rive::Scene> scene;
-        auto smCount = m_artboard->stateMachineCount();
-        int defaultIdx = m_artboard->defaultStateMachineIndex();
+        auto smCount = _artboard->stateMachineCount();
+        int defaultIdx = _artboard->defaultStateMachineIndex();
 
         if (defaultIdx >= 0 && defaultIdx < static_cast<int>(smCount))
-            scene = m_artboard->stateMachineAt(defaultIdx);
+            scene = _artboard->stateMachineAt(defaultIdx);
         else if (smCount > 0)
-            scene = m_artboard->stateMachineAt(0);
-        else if (m_artboard->animationCount() > 0)
-            scene = m_artboard->animationAt(0);
+            scene = _artboard->stateMachineAt(0);
+        else if (_artboard->animationCount() > 0)
+            scene = _artboard->animationAt(0);
         else
-            scene = std::make_unique<rive::StaticScene>(m_artboard.get());
+            scene = std::make_unique<rive::StaticScene>(_artboard.get());
 
         if (scene)
         {
             scene->advanceAndApply(0.0f);
-            m_scene = std::move(scene);
-            m_activeStateMachine = static_cast<rive::StateMachineInstance*>(m_scene.get());
-            m_layoutDirty = true;
+            _scene = std::move(scene);
+            _activeStateMachine = static_cast<rive::StateMachineInstance*>(_scene.get());
+            _layoutDirty = true;
         }
     }
 
-    void RiveRenderer::ApplyInput(InputCmd const& in)
+    void RiveRenderer::ApplyInput(InputCommand const& in)
     {
-        auto inputCount = m_activeStateMachine->inputCount();
+        auto inputCount = _activeStateMachine->inputCount();
         for (size_t i = 0; i < inputCount; ++i)
         {
-            if (auto input = m_activeStateMachine->input(i); input->name() == in.name)
+            if (auto input = _activeStateMachine->input(i); input->name() == in.name)
             {
                 switch (in.kind)
                 {
-                case InputCmd::Kind::Bool:
-                    if (auto b = static_cast<rive::SMIBool*>(input)) b->value(in.b);
+                case InputCommand::Kind::Bool:
+                    if (auto b = static_cast<rive::SMIBool*>(input)) b->value(in.boolValue);
                     break;
-                case InputCmd::Kind::Number:
-                    if (auto n = static_cast<rive::SMINumber*>(input)) n->value(in.f);
+                case InputCommand::Kind::Number:
+                    if (auto n = static_cast<rive::SMINumber*>(input)) n->value(in.numberValue);
                     break;
-                case InputCmd::Kind::Trigger:
+                case InputCommand::Kind::Trigger:
                     if (auto t = static_cast<rive::SMITrigger*>(input)) t->fire();
                     break;
                 }
+				return;
             }
         }
     }
 
-    void RiveRenderer::BroadcastPointer(const PointerCmd& p)
+    void RiveRenderer::BroadcastPointer(const PointerCommand& p)
     {
-        if (!m_scene) return;
+        if (!_scene) return;
         float x = p.x, y = p.y;
         if (TransformPoint(x, y))
         {
             rive::Vec2D pos{ x, y };
-            if (p.kind == PointerCmd::Move) m_scene->pointerMove(pos);
-            else if (p.kind == PointerCmd::Down) m_scene->pointerDown(pos);
-            else if (p.kind == PointerCmd::Up) m_scene->pointerUp(pos);
+            if (p.kind == PointerCommand::Kind::Move)
+            {
+                _scene->pointerMove(pos);
+            }
+            else if (p.kind == PointerCommand::Kind::Down)
+            {
+                _scene->pointerDown(pos);
+            }
+            else if (p.kind == PointerCommand::Kind::Up)
+            {
+                _scene->pointerUp(pos);
+            }
         }
     }
 
     bool RiveRenderer::TransformPoint(float& x, float& y) const
     {
-        if (!m_artboard) return false;
-        auto inv = m_viewTransform.invertOrIdentity();
+        if (!_artboard) return false;
+        auto inv = _viewTransform.invertOrIdentity();
         auto pt = inv * rive::Vec2D(x, y);
         x = pt.x; y = pt.y;
         return true;

@@ -45,5 +45,5 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		[[maybe_unused]] winrt::hstring const& target)
 	{
 
-	};
+	}
 }
