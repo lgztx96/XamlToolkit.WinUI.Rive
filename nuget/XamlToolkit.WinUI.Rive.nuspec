@@ -12,7 +12,7 @@
 		<repository type="git" url="https://github.com/lgztx96/CommunityToolkit.WinUI.git"/>
 		<description>WinUI Community Toolkit Rive (C++ Port).</description>
 		<releaseNotes>Updated features.</releaseNotes>
-		<tags>Windows Community Toolkit WCT WinUI WinRT WindowsAppSDK WASDK WinAppSDK Xaml CPP Native</tags>
+		<tags>Windows Community Toolkit WCT WinUI WinRT WindowsAppSDK WASDK WinAppSDK Xaml CPP Rive Native</tags>
 		<readme>Readme.md</readme>
 		<dependencies>
 			<dependency id="Microsoft.WindowsAppSDK" version="1.7.251014001" />
