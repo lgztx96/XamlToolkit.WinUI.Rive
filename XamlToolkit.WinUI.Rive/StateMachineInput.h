@@ -4,8 +4,11 @@
 #include "BoolInput.g.h"
 #include "NumberInput.g.h"
 #include "TriggerInput.g.h"
+#ifdef __INTELLISENSE__
+#include <winrt/Windows.UI.Xaml.Interop.h>
 #include <wil/wistd_type_traits.h>
 #include <wil/cppwinrt_authoring.h>
+#endif
 
 namespace winrt::XamlToolkit::WinUI::Rive::implementation
 {

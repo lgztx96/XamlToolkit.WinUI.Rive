@@ -1,11 +1,13 @@
 #pragma once
 
 #include "RivePlayer.g.h"
+#ifdef __INTELLISENSE__
 #include <wil/wistd_type_traits.h>
 #include <wil/cppwinrt_authoring.h>
 #include <winrt/Microsoft.UI.Composition.h>
 #include <winrt/Microsoft.UI.Xaml.Input.h>
 #include <winrt/Microsoft.UI.Input.h>
+#endif
 #include "RiveRenderer.h"
 
 namespace winrt::XamlToolkit::WinUI::Rive::implementation
@@ -87,11 +89,11 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 			winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
 
 		void HandlePointerPressedEvent(
-			IInspectable const&,
+			winrt::Windows::Foundation::IInspectable const&,
 			winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
 
 		void HandlePointerReleasedEvent(
-			IInspectable const&,
+			winrt::Windows::Foundation::IInspectable const&,
 			winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
 	};
 }

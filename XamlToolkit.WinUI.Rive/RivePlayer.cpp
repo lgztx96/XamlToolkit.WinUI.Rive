@@ -1,14 +1,19 @@
 #include "pch.h"
+#include "winrt_module_imports.h"
 #include "RivePlayer.h"
 #if __has_include("RivePlayer.g.cpp")
 #include "RivePlayer.g.cpp"
 #endif
+#ifdef __INTELLISENSE__
 #include <winrt/Windows.Web.Http.h>
 #include <winrt/Windows.Storage.h>
 #include <winrt/Windows.Storage.Streams.h>
-#include "Encoding.h"
+#include <winrt/Windows.UI.Xaml.Interop.h>
 #include <filesystem>
 #include <fstream>
+#endif
+
+#include "Encoding.h"
 #include "StateMachineInputCollection.h"
 
 namespace winrt::XamlToolkit::WinUI::Rive::implementation

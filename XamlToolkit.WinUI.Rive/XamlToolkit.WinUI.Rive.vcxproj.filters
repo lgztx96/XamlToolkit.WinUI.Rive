@@ -14,11 +14,16 @@
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <ClCompile Include="RivePlayer.cpp" />
     <ClCompile Include="RiveRenderer.cpp" />
+    <ClCompile Include="XamlTypeInfo.module.cpp" />
+    <ClCompile Include="XamlTypeInfo.Impl.module.cpp" />
+    <ClCompile Include="XamlMetaDataProvider.module.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="RiveRenderer.h" />
     <ClInclude Include="Encoding.h" />
+    <ClInclude Include="wil_cppwinrt_module.h" />
+    <ClInclude Include="winrt_module_imports.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="XamlToolkit.WinUI.Rive.def" />

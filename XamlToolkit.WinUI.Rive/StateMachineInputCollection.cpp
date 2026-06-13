@@ -1,4 +1,5 @@
 ﻿#include "pch.h"
+#include "winrt_module_imports.h"
 #include "StateMachineInputCollection.h"
 #if __has_include("StateMachineInputCollection.g.cpp")
 #include "StateMachineInputCollection.g.cpp"

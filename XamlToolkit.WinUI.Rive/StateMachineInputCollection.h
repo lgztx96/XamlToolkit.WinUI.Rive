@@ -1,7 +1,9 @@
 ﻿#pragma once
 
 #include "StateMachineInputCollection.g.h"
+#ifdef __INTELLISENSE__
 #include <winrt/Windows.Foundation.Collections.h>
+#endif
 
 namespace winrt::XamlToolkit::WinUI::Rive::implementation
 {

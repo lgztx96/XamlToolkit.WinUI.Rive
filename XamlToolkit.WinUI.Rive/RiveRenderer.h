@@ -1,12 +1,7 @@
 #pragma once
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <windows.h>
+#ifdef __INTELLISENSE__
 #include <winrt/base.h>
-#include <d3d11_1.h>
-#include <dxgi1_2.h>
 #include <thread>
 #include <mutex>
 #include <chrono>
@@ -15,7 +10,9 @@
 #include <variant>
 #include <string>
 #include <string_view>
-
+#endif
+#include <d3d11_1.h>
+#include <dxgi1_2.h>
 #include <rive/renderer/render_context.hpp>
 #include <rive/renderer/rive_renderer.hpp>
 #include <rive/renderer/d3d11/render_context_d3d_impl.hpp>
