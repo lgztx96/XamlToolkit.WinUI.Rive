@@ -2,7 +2,7 @@
 <package>
 	<metadata>
 		<id>XamlToolkit.WinUI.Rive.Native</id>
-		<version>0.1.0-alpha</version>
+		<version>0.2.0-alpha</version>
 		<title>XamlToolkit.WinUI.Rive.Native</title>
 		<authors>lgztx96</authors>
 		<owners>lgztx96</owners>
@@ -15,7 +15,7 @@
 		<tags>Windows Community Toolkit WCT WinUI WinRT WindowsAppSDK WASDK WinAppSDK Xaml CPP Rive Native</tags>
 		<readme>Readme.md</readme>
 		<dependencies>
-			<dependency id="Microsoft.WindowsAppSDK" version="1.7.251014001" />
+			<dependency id="Microsoft.WindowsAppSDK.WinUI" version="1.8.260528001" />
 		</dependencies>
 	</metadata>
 
