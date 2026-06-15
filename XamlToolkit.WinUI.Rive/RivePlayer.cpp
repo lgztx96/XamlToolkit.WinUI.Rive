@@ -16,13 +16,23 @@
 #include "Encoding.h"
 #include "StateMachineInputCollection.h"
 
+namespace winrt
+{
+	using namespace Windows::Foundation;
+	using namespace Windows::Storage;
+	using namespace Windows::Web::Http;
+	using namespace Windows::UI::Xaml::Interop;
+	using namespace Microsoft::UI::Xaml;
+	using namespace Microsoft::UI::Xaml::Controls;
+}
+
 namespace winrt::XamlToolkit::WinUI::Rive::implementation
 {
-	const wil::single_threaded_property<winrt::Microsoft::UI::Xaml::DependencyProperty> RivePlayer::SourceProperty = winrt::Microsoft::UI::Xaml::DependencyProperty::Register(
+	const wil::single_threaded_property<winrt::DependencyProperty> RivePlayer::SourceProperty = winrt::DependencyProperty::Register(
 		L"Source",
 		winrt::xaml_typename<winrt::hstring>(),
 		winrt::xaml_typename<class_type>(),
-		winrt::Microsoft::UI::Xaml::PropertyMetadata(winrt::box_value(L""), &RivePlayer::OnSourceNameChanged));
+		winrt::PropertyMetadata(winrt::box_value(L""), &RivePlayer::OnSourceNameChanged));
 
 	winrt::hstring RivePlayer::Source() const
 	{
@@ -34,11 +44,11 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		SetValue(SourceProperty(), winrt::box_value(value));
 	}
 
-	const wil::single_threaded_property<winrt::Microsoft::UI::Xaml::DependencyProperty> RivePlayer::ArtboardProperty = winrt::Microsoft::UI::Xaml::DependencyProperty::Register(
+	const wil::single_threaded_property<winrt::DependencyProperty> RivePlayer::ArtboardProperty = winrt::DependencyProperty::Register(
 		L"Artboard",
 		winrt::xaml_typename<winrt::hstring>(),
 		winrt::xaml_typename<class_type>(),
-		winrt::Microsoft::UI::Xaml::PropertyMetadata(winrt::box_value(L""), &RivePlayer::OnArtboardNameChanged));
+		winrt::PropertyMetadata(winrt::box_value(L""), &RivePlayer::OnArtboardNameChanged));
 
 	winrt::hstring RivePlayer::Artboard() const
 	{
@@ -50,11 +60,11 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		SetValue(ArtboardProperty(), winrt::box_value(value));
 	}
 
-	const wil::single_threaded_property<winrt::Microsoft::UI::Xaml::DependencyProperty> RivePlayer::StateMachineProperty = winrt::Microsoft::UI::Xaml::DependencyProperty::Register(
+	const wil::single_threaded_property<winrt::DependencyProperty> RivePlayer::StateMachineProperty = winrt::DependencyProperty::Register(
 		L"StateMachine",
 		winrt::xaml_typename<winrt::hstring>(),
 		winrt::xaml_typename<class_type>(),
-		winrt::Microsoft::UI::Xaml::PropertyMetadata(winrt::box_value(L""), &RivePlayer::OnStateMachineNameChanged));
+		winrt::PropertyMetadata(winrt::box_value(L""), &RivePlayer::OnStateMachineNameChanged));
 
 	winrt::hstring RivePlayer::StateMachine() const
 	{
@@ -66,11 +76,11 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		SetValue(StateMachineProperty(), winrt::box_value(value));
 	}
 
-	const wil::single_threaded_property<winrt::Microsoft::UI::Xaml::DependencyProperty> RivePlayer::StateMachineInputCollectionProperty = winrt::Microsoft::UI::Xaml::DependencyProperty::Register(
+	const wil::single_threaded_property<winrt::DependencyProperty> RivePlayer::StateMachineInputCollectionProperty = winrt::DependencyProperty::Register(
 		L"StateMachineInputCollection",
 		winrt::xaml_typename<winrt::XamlToolkit::WinUI::Rive::StateMachineInputCollection>(),
 		winrt::xaml_typename<class_type>(),
-		winrt::Microsoft::UI::Xaml::PropertyMetadata(winrt::make<implementation::StateMachineInputCollection>(), &RivePlayer::OnStateMachineInputCollectionChanged));
+		winrt::PropertyMetadata(winrt::make<implementation::StateMachineInputCollection>(), &RivePlayer::OnStateMachineInputCollectionChanged));
 
 	winrt::XamlToolkit::WinUI::Rive::StateMachineInputCollection RivePlayer::StateMachineInputCollection() const
 	{
@@ -99,7 +109,7 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 
 	void RivePlayer::OnApplyTemplate()
 	{
-		_swapChainPanel = GetTemplateChild(ContainerVisualName).try_as<winrt::Microsoft::UI::Xaml::Controls::SwapChainPanel>();
+		_swapChainPanel = GetTemplateChild(ContainerVisualName).try_as<winrt::SwapChainPanel>();
 	}
 
 	void RivePlayer::SetBool(winrt::hstring const& name, bool value)
@@ -148,8 +158,8 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 	}
 
 	void RivePlayer::OnLoaded(
-		[[maybe_unused]] winrt::Windows::Foundation::IInspectable const& s,
-		[[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+		[[maybe_unused]] winrt::IInspectable const& s,
+		[[maybe_unused]] winrt::RoutedEventArgs const& e)
 	{
 		if (_swapChainPanel)
 		{
@@ -161,15 +171,15 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 	}
 
 	void RivePlayer::OnUnloaded(
-		[[maybe_unused]] winrt::Windows::Foundation::IInspectable const& s,
-		[[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+		[[maybe_unused]] winrt::IInspectable const& s,
+		[[maybe_unused]] winrt::RoutedEventArgs const& e)
 	{
 		_renderer->Stop();
 	}
 
 	void RivePlayer::OnSourceNameChanged(
-		winrt::Microsoft::UI::Xaml::DependencyObject const& d,
-		winrt::Microsoft::UI::Xaml::DependencyPropertyChangedEventArgs const& e)
+		winrt::DependencyObject const& d,
+		winrt::DependencyPropertyChangedEventArgs const& e)
 	{
 		auto player = d.try_as<class_type>();
 		auto playerImpl = winrt::get_self<RivePlayer>(player);
@@ -182,8 +192,8 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		playerImpl->LoadSourceFileDataAsync(newSourceName, playerImpl->_currentSourceToken);
 	}
 
-	void RivePlayer::OnArtboardNameChanged(winrt::Microsoft::UI::Xaml::DependencyObject const& d,
-		winrt::Microsoft::UI::Xaml::DependencyPropertyChangedEventArgs const& e)
+	void RivePlayer::OnArtboardNameChanged(winrt::DependencyObject const& d,
+		winrt::DependencyPropertyChangedEventArgs const& e)
 	{
 		auto player = d.try_as<class_type>();
 		auto playerImpl = winrt::get_self<RivePlayer>(player);
@@ -204,8 +214,8 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 	}
 
 	void RivePlayer::OnStateMachineNameChanged(
-		winrt::Microsoft::UI::Xaml::DependencyObject const& d,
-		winrt::Microsoft::UI::Xaml::DependencyPropertyChangedEventArgs const& e)
+		winrt::DependencyObject const& d,
+		winrt::DependencyPropertyChangedEventArgs const& e)
 	{
 		auto player = d.try_as<class_type>();
 		auto playerImpl = winrt::get_self<RivePlayer>(player);
@@ -226,8 +236,8 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 	}
 
 	void RivePlayer::OnStateMachineInputCollectionChanged(
-		winrt::Microsoft::UI::Xaml::DependencyObject const& d,
-		winrt::Microsoft::UI::Xaml::DependencyPropertyChangedEventArgs const& e)
+		winrt::DependencyObject const& d,
+		winrt::DependencyPropertyChangedEventArgs const& e)
 	{
 		// Clear the RivePlayer on the old reference so it quits updating us.
 		auto oldCollection = e.OldValue().try_as<winrt::XamlToolkit::WinUI::Rive::StateMachineInputCollection>();
@@ -239,11 +249,11 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		newCollectionImpl->SetRivePlayer(d.try_as<class_type>());
 	}
 
-	static winrt::Windows::Foundation::Uri TryCreate(winrt::hstring const& uriString)
+	static winrt::Uri TryCreate(winrt::hstring const& uriString)
 	{
 		try
 		{
-			winrt::Windows::Foundation::Uri uri(uriString);
+			winrt::Uri uri(uriString);
 			return uri;
 		}
 		catch ([[maybe_unused]] winrt::hresult_error const& ex)
@@ -252,9 +262,9 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		}
 	}
 
-	winrt::Windows::Foundation::IAsyncAction RivePlayer::LoadSourceFileDataAsync(winrt::hstring const& uriString, int sourceToken)
+	winrt::IAsyncAction RivePlayer::LoadSourceFileDataAsync(winrt::hstring const& uriString, int sourceToken)
 	{
-		winrt::Windows::Foundation::Uri uri = TryCreate(uriString);
+		winrt::Uri uri = TryCreate(uriString);
 		if (uri == nullptr)
 		{
 			co_return;
@@ -266,8 +276,8 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		{
 			try
 			{
-				Windows::Web::Http::HttpClient httpClient;
-				Windows::Web::Http::HttpResponseMessage response = co_await httpClient.GetAsync(uri);
+				winrt::HttpClient httpClient;
+				winrt::HttpResponseMessage response = co_await httpClient.GetAsync(uri);
 				if (response.IsSuccessStatusCode())
 				{
 					auto buffer = co_await response.Content().ReadAsBufferAsync();
@@ -282,10 +292,10 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		}
 		else if (scheme == L"ms-appx")
 		{
-			auto file = co_await Windows::Storage::StorageFile::GetFileFromApplicationUriAsync(uri);
+			auto file = co_await winrt::StorageFile::GetFileFromApplicationUriAsync(uri);
 			if (file != nullptr && sourceToken == _currentSourceToken)
 			{
-				auto buffer = co_await Windows::Storage::FileIO::ReadBufferAsync(file);
+				auto buffer = co_await winrt::FileIO::ReadBufferAsync(file);
 				data.resize(buffer.Length());
 				std::copy(buffer.data(), buffer.data() + buffer.Length(), data.data());
 			}
@@ -313,8 +323,8 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 	}
 
 	void RivePlayer::HandleSizeChangedEvent(
-		[[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender,
-		winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
+		[[maybe_unused]] winrt::IInspectable const& sender,
+		winrt::SizeChangedEventArgs const& e)
 	{
 		if (_renderer)
 		{
@@ -324,28 +334,28 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 	}
 
 	void RivePlayer::HandlePointerMovedEvent(
-		winrt::Windows::Foundation::IInspectable const& sender,
-		winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
+		winrt::IInspectable const& sender,
+		winrt::Input::PointerRoutedEventArgs const& e)
 	{
-		auto uiElement = sender.as<winrt::Microsoft::UI::Xaml::UIElement>();
+		auto uiElement = sender.as<winrt::UIElement>();
 		auto pointerPos = e.GetCurrentPoint(uiElement).Position();
 		_renderer->PointerMove(pointerPos.X, pointerPos.Y);
 	}
 
 	void RivePlayer::HandlePointerPressedEvent(
-		IInspectable const& sender,
-		winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
+		winrt::IInspectable const& sender,
+		winrt::Input::PointerRoutedEventArgs const& e)
 	{
-		auto uiElement = sender.as<winrt::Microsoft::UI::Xaml::UIElement>();
+		auto uiElement = sender.as<winrt::UIElement>();
 		auto pointerPos = e.GetCurrentPoint(uiElement).Position();
 		_renderer->PointerDown(pointerPos.X, pointerPos.Y);
 	}
 
 	void RivePlayer::HandlePointerReleasedEvent(
-		IInspectable const& sender,
-		winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
+		winrt::IInspectable const& sender,
+		winrt::Input::PointerRoutedEventArgs const& e)
 	{
-		auto uiElement = sender.as<winrt::Microsoft::UI::Xaml::UIElement>();
+		auto uiElement = sender.as<winrt::UIElement>();
 		auto pointerPos = e.GetCurrentPoint(uiElement).Position();
 		_renderer->PointerUp(pointerPos.X, pointerPos.Y);
 	}

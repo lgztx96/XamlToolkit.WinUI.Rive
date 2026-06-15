@@ -26,19 +26,19 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
         }
     }
 
-    void StateMachineInputCollection::InputsVectorChanged(IObservableVector<DependencyObject> const& sender, IVectorChangedEventArgs const& event)
+    void StateMachineInputCollection::InputsVectorChanged(winrt::IObservableVector<winrt::DependencyObject> const& sender, winrt::IVectorChangedEventArgs const& event)
     {
         switch (event.CollectionChange())
         {
-        case CollectionChange::ItemInserted:
-        case CollectionChange::ItemChanged:
+        case winrt::CollectionChange::ItemInserted:
+        case winrt::CollectionChange::ItemChanged:
         {
             auto input = sender.GetAt(event.Index()).as<IStateMachineInput>();
             auto inputImpl = winrt::get_self<StateMachineInput>(input);
             inputImpl->SetRivePlayer(_rivePlayer ? _rivePlayer.get() : nullptr);
         }
         break;
-        case CollectionChange::Reset:
+        case winrt::CollectionChange::Reset:
             for (const auto& item : sender)
             {
                 if (auto input = item.try_as<IStateMachineInput>())

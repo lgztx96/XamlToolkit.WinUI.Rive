@@ -4,11 +4,19 @@
 #ifdef __INTELLISENSE__
 #include <wil/wistd_type_traits.h>
 #include <wil/cppwinrt_authoring.h>
-#include <winrt/Microsoft.UI.Composition.h>
-#include <winrt/Microsoft.UI.Xaml.Input.h>
-#include <winrt/Microsoft.UI.Input.h>
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Microsoft.UI.Xaml.h>
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#include <winrt/XamlToolkit.WinUI.Rive.h>
 #endif
 #include "RiveRenderer.h"
+
+namespace winrt 
+{
+	using namespace Windows::Foundation;
+	using namespace Microsoft::UI::Xaml;
+	using namespace Microsoft::UI::Xaml::Controls;
+}
 
 namespace winrt::XamlToolkit::WinUI::Rive::implementation
 {
@@ -16,25 +24,25 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 	{
 		RivePlayer();
 
-		static const wil::single_threaded_property<winrt::Microsoft::UI::Xaml::DependencyProperty> SourceProperty;
+		static const wil::single_threaded_property<winrt::DependencyProperty> SourceProperty;
 
 		winrt::hstring Source() const;
 
 		void Source(winrt::hstring const& value) const;
 
-		static const wil::single_threaded_property<winrt::Microsoft::UI::Xaml::DependencyProperty> ArtboardProperty;
+		static const wil::single_threaded_property<winrt::DependencyProperty> ArtboardProperty;
 
 		winrt::hstring Artboard() const;
 
 		void Artboard(winrt::hstring const& value) const;
 
-		static const wil::single_threaded_property<winrt::Microsoft::UI::Xaml::DependencyProperty> StateMachineProperty;
+		static const wil::single_threaded_property<winrt::DependencyProperty> StateMachineProperty;
 
 		winrt::hstring StateMachine() const;
 
 		void StateMachine(winrt::hstring const& value) const;
 
-		static const wil::single_threaded_property<winrt::Microsoft::UI::Xaml::DependencyProperty> StateMachineInputCollectionProperty;
+		static const wil::single_threaded_property<winrt::DependencyProperty> StateMachineInputCollectionProperty;
 
 		winrt::XamlToolkit::WinUI::Rive::StateMachineInputCollection StateMachineInputCollection() const;
 
@@ -50,7 +58,7 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 
 	private:
 		std::unique_ptr<RiveRenderer> _renderer;
-		winrt::Microsoft::UI::Xaml::Controls::SwapChainPanel _swapChainPanel{ nullptr };
+		winrt::SwapChainPanel _swapChainPanel{ nullptr };
 		static constexpr std::wstring_view ContainerVisualName = L"RiveSwapChain";
 		int _currentSourceToken = 0;
 
@@ -59,42 +67,42 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 
 		std::unique_ptr<std::vector<Command>> _deferredSMInputsDuringAsyncSourceLoad;
 
-		winrt::Windows::Foundation::IAsyncAction LoadSourceFileDataAsync(winrt::hstring const& uriString, int sourceToken);
+		winrt::IAsyncAction LoadSourceFileDataAsync(winrt::hstring const& uriString, int sourceToken);
 
-		void OnLoaded(winrt::Windows::Foundation::IInspectable const& s, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+		void OnLoaded(winrt::IInspectable const& s, winrt::RoutedEventArgs const& e);
 
-		void OnUnloaded(winrt::Windows::Foundation::IInspectable const& s, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+		void OnUnloaded(winrt::IInspectable const& s, winrt::RoutedEventArgs const& e);
 
 		static void OnSourceNameChanged(
-			winrt::Microsoft::UI::Xaml::DependencyObject const& d,
-			winrt::Microsoft::UI::Xaml::DependencyPropertyChangedEventArgs const& e);
+			winrt::DependencyObject const& d,
+			winrt::DependencyPropertyChangedEventArgs const& e);
 
-		static void OnArtboardNameChanged(winrt::Microsoft::UI::Xaml::DependencyObject const& d,
-			winrt::Microsoft::UI::Xaml::DependencyPropertyChangedEventArgs const& e);
+		static void OnArtboardNameChanged(winrt::DependencyObject const& d,
+			winrt::DependencyPropertyChangedEventArgs const& e);
 
 		static void OnStateMachineNameChanged(
-			winrt::Microsoft::UI::Xaml::DependencyObject const& d,
-			winrt::Microsoft::UI::Xaml::DependencyPropertyChangedEventArgs const& e);
+			winrt::DependencyObject const& d,
+			winrt::DependencyPropertyChangedEventArgs const& e);
 
 		static void OnStateMachineInputCollectionChanged(
-			winrt::Microsoft::UI::Xaml::DependencyObject const& d,
-			winrt::Microsoft::UI::Xaml::DependencyPropertyChangedEventArgs const& e);
+			winrt::DependencyObject const& d,
+			winrt::DependencyPropertyChangedEventArgs const& e);
 
 		void HandleSizeChangedEvent(
-			winrt::Windows::Foundation::IInspectable const& sender,
-			winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e);
+			winrt::IInspectable const& sender,
+			winrt::SizeChangedEventArgs const& e);
 
 		void HandlePointerMovedEvent(
-			winrt::Windows::Foundation::IInspectable const& sender,
-			winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
+			winrt::IInspectable const& sender,
+			winrt::Input::PointerRoutedEventArgs const& e);
 
 		void HandlePointerPressedEvent(
-			winrt::Windows::Foundation::IInspectable const&,
-			winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
+			winrt::IInspectable const&,
+			winrt::Input::PointerRoutedEventArgs const& e);
 
 		void HandlePointerReleasedEvent(
-			winrt::Windows::Foundation::IInspectable const&,
-			winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
+			winrt::IInspectable const&,
+			winrt::Input::PointerRoutedEventArgs const& e);
 	};
 }
 

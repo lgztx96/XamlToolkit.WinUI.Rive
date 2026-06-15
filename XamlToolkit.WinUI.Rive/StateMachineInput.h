@@ -5,10 +5,19 @@
 #include "NumberInput.g.h"
 #include "TriggerInput.g.h"
 #ifdef __INTELLISENSE__
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Microsoft.UI.Xaml.h>
 #include <winrt/Windows.UI.Xaml.Interop.h>
 #include <wil/wistd_type_traits.h>
 #include <wil/cppwinrt_authoring.h>
 #endif
+
+namespace winrt
+{
+	using namespace Windows::Foundation;
+	using namespace Windows::UI::Xaml::Interop;
+	using namespace Microsoft::UI::Xaml;
+}
 
 namespace winrt::XamlToolkit::WinUI::Rive::implementation
 {
@@ -36,26 +45,26 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		BoolInput() = default;
 
 		static void OnValueChanged(
-			winrt::Microsoft::UI::Xaml::DependencyObject const& d,
-			[[maybe_unused]] winrt::Microsoft::UI::Xaml::DependencyPropertyChangedEventArgs const& e)
+			winrt::DependencyObject const& d,
+			[[maybe_unused]] winrt::DependencyPropertyChangedEventArgs const& e)
 		{
 			auto input = d.as<class_type>();
 			auto inputImpl = winrt::get_self<BoolInput>(input);
 			inputImpl->StateMachineInput::Apply();
 		}
 
-		static inline const wil::single_threaded_property<winrt::Microsoft::UI::Xaml::DependencyProperty> ValueProperty = winrt::Microsoft::UI::Xaml::DependencyProperty::Register(
+		static inline const wil::single_threaded_property<winrt::DependencyProperty> ValueProperty = winrt::DependencyProperty::Register(
 			L"Value",
-			winrt::xaml_typename<winrt::Windows::Foundation::IReference<bool>>(),
+			winrt::xaml_typename<winrt::IReference<bool>>(),
 			winrt::xaml_typename<class_type>(),
-			winrt::Microsoft::UI::Xaml::PropertyMetadata(nullptr, &BoolInput::OnValueChanged));
+			winrt::PropertyMetadata(nullptr, &BoolInput::OnValueChanged));
 
 		std::optional<bool> Value() const
 		{
 			return GetValue(ValueProperty()).try_as<bool>();
 		}
 
-		void Value(winrt::Windows::Foundation::IReference<bool> const& value) const
+		void Value(winrt::IReference<bool> const& value) const
 		{
 			SetValue(ValueProperty(), value);
 		}
@@ -74,26 +83,26 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		NumberInput() = default;
 
 		static void OnValueChanged(
-			winrt::Microsoft::UI::Xaml::DependencyObject const& d,
-			[[maybe_unused]] winrt::Microsoft::UI::Xaml::DependencyPropertyChangedEventArgs const& e)
+			winrt::DependencyObject const& d,
+			[[maybe_unused]] winrt::DependencyPropertyChangedEventArgs const& e)
 		{
 			auto input = d.as<class_type>();
 			auto inputImpl = winrt::get_self<NumberInput>(input);
 			inputImpl->StateMachineInput::Apply();
 		}
 
-		static inline const wil::single_threaded_property<winrt::Microsoft::UI::Xaml::DependencyProperty> ValueProperty = winrt::Microsoft::UI::Xaml::DependencyProperty::Register(
+		static inline const wil::single_threaded_property<winrt::DependencyProperty> ValueProperty = winrt::DependencyProperty::Register(
 			L"Value",
-			winrt::xaml_typename<winrt::Windows::Foundation::IReference<double>>(),
+			winrt::xaml_typename<winrt::IReference<double>>(),
 			winrt::xaml_typename<class_type>(),
-			winrt::Microsoft::UI::Xaml::PropertyMetadata(nullptr, &NumberInput::OnValueChanged));
+			winrt::PropertyMetadata(nullptr, &NumberInput::OnValueChanged));
 
 		std::optional<double> Value() const
 		{
 			return GetValue(ValueProperty()).try_as<double>();
 		}
 
-		void Value(winrt::Windows::Foundation::IReference<double> const& value) const
+		void Value(winrt::IReference<double> const& value) const
 		{
 			SetValue(ValueProperty(), value);
 		}

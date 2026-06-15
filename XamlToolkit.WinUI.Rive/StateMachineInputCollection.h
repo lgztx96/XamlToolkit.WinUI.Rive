@@ -5,18 +5,21 @@
 #include <winrt/Windows.Foundation.Collections.h>
 #endif
 
+namespace winrt
+{
+    using namespace Windows::Foundation::Collections;
+    using namespace Microsoft::UI::Xaml;
+}
+
 namespace winrt::XamlToolkit::WinUI::Rive::implementation
 {
-    using namespace winrt::Windows::Foundation::Collections;
-    using namespace winrt::Microsoft::UI::Xaml;
-
     struct StateMachineInputCollection : StateMachineInputCollectionT<StateMachineInputCollection>
     {
         StateMachineInputCollection();
 
         void SetRivePlayer(winrt::XamlToolkit::WinUI::Rive::RivePlayer const& rivePlayer);
 
-        void InputsVectorChanged(IObservableVector<DependencyObject> const& sender, IVectorChangedEventArgs const& event);
+        void InputsVectorChanged(winrt::IObservableVector<winrt::DependencyObject> const& sender, winrt::IVectorChangedEventArgs const& event);
 
     private:
         winrt::weak_ref<winrt::XamlToolkit::WinUI::Rive::RivePlayer> _rivePlayer;
