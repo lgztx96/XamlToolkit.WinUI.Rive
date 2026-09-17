@@ -7,8 +7,8 @@
 
 namespace winrt
 {
-    using namespace Windows::Foundation::Collections;
-    using namespace Microsoft::UI::Xaml;
+    using namespace ::winrt::Windows::Foundation::Collections;
+    using namespace ::winrt::Microsoft::UI::Xaml;
 }
 
 namespace winrt::XamlToolkit::WinUI::Rive::implementation

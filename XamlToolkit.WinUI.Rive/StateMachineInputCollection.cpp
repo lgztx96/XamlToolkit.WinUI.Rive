@@ -15,12 +15,12 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 
     void StateMachineInputCollection::SetRivePlayer(winrt::XamlToolkit::WinUI::Rive::RivePlayer const& rivePlayer)
     {
-        _rivePlayer = rivePlayer ? winrt::make_weak(rivePlayer) : nullptr;
+        _rivePlayer = rivePlayer;
         for (const auto& item : *this)
         {
-            if (auto input = item.try_as<IStateMachineInput>())
+            if (const auto input = item.try_as<IStateMachineInput>())
             {
-                auto inputImpl = winrt::get_self<StateMachineInput>(input);
+                const auto inputImpl = winrt::get_self<StateMachineInput>(input);
                 inputImpl->SetRivePlayer(rivePlayer);
             }
         }
@@ -33,17 +33,17 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
         case winrt::CollectionChange::ItemInserted:
         case winrt::CollectionChange::ItemChanged:
         {
-            auto input = sender.GetAt(event.Index()).as<IStateMachineInput>();
-            auto inputImpl = winrt::get_self<StateMachineInput>(input);
+            const auto input = sender.GetAt(event.Index()).as<IStateMachineInput>();
+            const auto inputImpl = winrt::get_self<StateMachineInput>(input);
             inputImpl->SetRivePlayer(_rivePlayer ? _rivePlayer.get() : nullptr);
         }
         break;
         case winrt::CollectionChange::Reset:
             for (const auto& item : sender)
             {
-                if (auto input = item.try_as<IStateMachineInput>())
+                if (const auto input = item.try_as<IStateMachineInput>())
                 {
-                    auto inputImpl = winrt::get_self<StateMachineInput>(input);
+                    const auto inputImpl = winrt::get_self<StateMachineInput>(input);
                     inputImpl->SetRivePlayer(_rivePlayer ? _rivePlayer.get() : nullptr);
                 }
             }

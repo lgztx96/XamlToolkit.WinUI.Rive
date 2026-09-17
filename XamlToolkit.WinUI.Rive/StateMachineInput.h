@@ -14,17 +14,15 @@
 
 namespace winrt
 {
-	using namespace Windows::Foundation;
-	using namespace Windows::UI::Xaml::Interop;
-	using namespace Microsoft::UI::Xaml;
+	using namespace ::winrt::Windows::Foundation;
+	using namespace ::winrt::Windows::UI::Xaml::Interop;
+	using namespace ::winrt::Microsoft::UI::Xaml;
 }
 
 namespace winrt::XamlToolkit::WinUI::Rive::implementation
 {
 	struct StateMachineInput : StateMachineInputT<StateMachineInput>
 	{
-		StateMachineInput() = default;
-
 		winrt::hstring Target() const;
 
 		void Target(winrt::hstring const& value);
@@ -42,94 +40,37 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 
 	struct BoolInput : BoolInputT<BoolInput, StateMachineInput>
 	{
-		BoolInput() = default;
-
 		static void OnValueChanged(
 			winrt::DependencyObject const& d,
-			[[maybe_unused]] winrt::DependencyPropertyChangedEventArgs const& e)
-		{
-			auto input = d.as<class_type>();
-			auto inputImpl = winrt::get_self<BoolInput>(input);
-			inputImpl->StateMachineInput::Apply();
-		}
+			[[maybe_unused]] winrt::DependencyPropertyChangedEventArgs const& e);
 
-		static inline const wil::single_threaded_property<winrt::DependencyProperty> ValueProperty = winrt::DependencyProperty::Register(
-			L"Value",
-			winrt::xaml_typename<winrt::IReference<bool>>(),
-			winrt::xaml_typename<class_type>(),
-			winrt::PropertyMetadata(nullptr, &BoolInput::OnValueChanged));
+		static const wil::single_threaded_property<winrt::DependencyProperty> ValueProperty;
 
-		std::optional<bool> Value() const
-		{
-			return GetValue(ValueProperty()).try_as<bool>();
-		}
+		std::optional<bool> Value() const;
 
-		void Value(winrt::IReference<bool> const& value) const
-		{
-			SetValue(ValueProperty(), value);
-		}
+		void Value(winrt::IReference<bool> const& value) const;
 
-		void Apply(winrt::XamlToolkit::WinUI::Rive::RivePlayer const& rivePlayer, winrt::hstring const& inputName) override
-		{
-			if (auto boolean = Value())
-			{
-				rivePlayer.SetBool(inputName, *boolean);
-			}
-		}
+		void Apply(winrt::XamlToolkit::WinUI::Rive::RivePlayer const& rivePlayer, winrt::hstring const& inputName) override;
 	};
 
 	struct NumberInput : NumberInputT<NumberInput, StateMachineInput>
 	{
-		NumberInput() = default;
-
 		static void OnValueChanged(
 			winrt::DependencyObject const& d,
-			[[maybe_unused]] winrt::DependencyPropertyChangedEventArgs const& e)
-		{
-			auto input = d.as<class_type>();
-			auto inputImpl = winrt::get_self<NumberInput>(input);
-			inputImpl->StateMachineInput::Apply();
-		}
+			[[maybe_unused]] winrt::DependencyPropertyChangedEventArgs const& e);
 
-		static inline const wil::single_threaded_property<winrt::DependencyProperty> ValueProperty = winrt::DependencyProperty::Register(
-			L"Value",
-			winrt::xaml_typename<winrt::IReference<double>>(),
-			winrt::xaml_typename<class_type>(),
-			winrt::PropertyMetadata(nullptr, &NumberInput::OnValueChanged));
+		static const wil::single_threaded_property<winrt::DependencyProperty> ValueProperty;
 
-		std::optional<double> Value() const
-		{
-			return GetValue(ValueProperty()).try_as<double>();
-		}
+		std::optional<double> Value() const;
 
-		void Value(winrt::IReference<double> const& value) const
-		{
-			SetValue(ValueProperty(), value);
-		}
+		void Value(winrt::IReference<double> const& value) const;
 
-		void Apply(winrt::XamlToolkit::WinUI::Rive::RivePlayer const& rivePlayer, winrt::hstring const& inputName) override
-		{
-			if (auto number = Value())
-			{
-				rivePlayer.SetNumber(inputName, static_cast<float>(*number));
-			}
-		}
+		void Apply(winrt::XamlToolkit::WinUI::Rive::RivePlayer const& rivePlayer, winrt::hstring const& inputName) override;
 	};
 
 	struct TriggerInput : TriggerInputT<TriggerInput, StateMachineInput>
 	{
-		TriggerInput() = default;
-
-		void Fire()
-		{
-			if (auto target = Target(); !target.empty())
-			{
-				if (auto rivePlayer = _rivePlayer.get())
-				{
-					rivePlayer.FireTrigger(target);
-				}
-			}
-		};
+		void Fire();
 	};
 }
 

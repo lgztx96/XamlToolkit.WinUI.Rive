@@ -9,30 +9,31 @@
 #include <winrt/Windows.Storage.h>
 #include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Windows.UI.Xaml.Interop.h>
+#include <winrt/Microsoft.UI.Input.h>
 #include <filesystem>
 #include <fstream>
 #endif
 
-#include "Encoding.h"
 #include "StateMachineInputCollection.h"
 
 namespace winrt
 {
-	using namespace Windows::Foundation;
-	using namespace Windows::Storage;
-	using namespace Windows::Web::Http;
-	using namespace Windows::UI::Xaml::Interop;
-	using namespace Microsoft::UI::Xaml;
-	using namespace Microsoft::UI::Xaml::Controls;
+	using namespace ::winrt::Windows::Foundation;
+	using namespace ::winrt::Windows::Storage;
+	using namespace ::winrt::Windows::Web::Http;
+	using namespace ::winrt::Windows::UI::Xaml::Interop;
+	using namespace ::winrt::Microsoft::UI::Xaml;
+	using namespace ::winrt::Microsoft::UI::Xaml::Controls;
 }
 
 namespace winrt::XamlToolkit::WinUI::Rive::implementation
 {
-	const wil::single_threaded_property<winrt::DependencyProperty> RivePlayer::SourceProperty = winrt::DependencyProperty::Register(
-		L"Source",
-		winrt::xaml_typename<winrt::hstring>(),
-		winrt::xaml_typename<class_type>(),
-		winrt::PropertyMetadata(winrt::box_value(L""), &RivePlayer::OnSourceNameChanged));
+	const wil::single_threaded_property<winrt::DependencyProperty> RivePlayer::SourceProperty = 
+		winrt::DependencyProperty::Register(
+			L"Source",
+			winrt::xaml_typename<winrt::hstring>(),
+			winrt::xaml_typename<class_type>(),
+			winrt::PropertyMetadata(winrt::box_value(L""), &RivePlayer::OnSourceNameChanged));
 
 	winrt::hstring RivePlayer::Source() const
 	{
@@ -44,11 +45,12 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		SetValue(SourceProperty(), winrt::box_value(value));
 	}
 
-	const wil::single_threaded_property<winrt::DependencyProperty> RivePlayer::ArtboardProperty = winrt::DependencyProperty::Register(
-		L"Artboard",
-		winrt::xaml_typename<winrt::hstring>(),
-		winrt::xaml_typename<class_type>(),
-		winrt::PropertyMetadata(winrt::box_value(L""), &RivePlayer::OnArtboardNameChanged));
+	const wil::single_threaded_property<winrt::DependencyProperty> RivePlayer::ArtboardProperty = 
+		winrt::DependencyProperty::Register(
+			L"Artboard",
+			winrt::xaml_typename<winrt::hstring>(),
+			winrt::xaml_typename<class_type>(),
+			winrt::PropertyMetadata(winrt::box_value(L""), &RivePlayer::OnArtboardNameChanged));
 
 	winrt::hstring RivePlayer::Artboard() const
 	{
@@ -60,11 +62,12 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		SetValue(ArtboardProperty(), winrt::box_value(value));
 	}
 
-	const wil::single_threaded_property<winrt::DependencyProperty> RivePlayer::StateMachineProperty = winrt::DependencyProperty::Register(
-		L"StateMachine",
-		winrt::xaml_typename<winrt::hstring>(),
-		winrt::xaml_typename<class_type>(),
-		winrt::PropertyMetadata(winrt::box_value(L""), &RivePlayer::OnStateMachineNameChanged));
+	const wil::single_threaded_property<winrt::DependencyProperty> RivePlayer::StateMachineProperty = 
+		winrt::DependencyProperty::Register(
+			L"StateMachine",
+			winrt::xaml_typename<winrt::hstring>(),
+			winrt::xaml_typename<class_type>(),
+			winrt::PropertyMetadata(winrt::box_value(L""), &RivePlayer::OnStateMachineNameChanged));
 
 	winrt::hstring RivePlayer::StateMachine() const
 	{
@@ -76,11 +79,12 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		SetValue(StateMachineProperty(), winrt::box_value(value));
 	}
 
-	const wil::single_threaded_property<winrt::DependencyProperty> RivePlayer::StateMachineInputCollectionProperty = winrt::DependencyProperty::Register(
-		L"StateMachineInputCollection",
-		winrt::xaml_typename<winrt::XamlToolkit::WinUI::Rive::StateMachineInputCollection>(),
-		winrt::xaml_typename<class_type>(),
-		winrt::PropertyMetadata(winrt::make<implementation::StateMachineInputCollection>(), &RivePlayer::OnStateMachineInputCollectionChanged));
+	const wil::single_threaded_property<winrt::DependencyProperty> RivePlayer::StateMachineInputCollectionProperty = 
+		winrt::DependencyProperty::Register(
+			L"StateMachineInputCollection",
+			winrt::xaml_typename<winrt::XamlToolkit::WinUI::Rive::StateMachineInputCollection>(),
+			winrt::xaml_typename<class_type>(),
+			winrt::PropertyMetadata(nullptr, &RivePlayer::OnStateMachineInputCollectionChanged));
 
 	winrt::XamlToolkit::WinUI::Rive::StateMachineInputCollection RivePlayer::StateMachineInputCollection() const
 	{
@@ -102,9 +106,8 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		PointerPressed({ this, &RivePlayer::HandlePointerPressedEvent });
 		PointerReleased({ this, &RivePlayer::HandlePointerReleasedEvent });
 		_renderer = std::make_unique<RiveRenderer>();
-		auto collection = StateMachineInputCollection();
-		auto collectionImpl = winrt::get_self<implementation::StateMachineInputCollection>(collection);
-		collectionImpl->SetRivePlayer(*this);
+
+		StateMachineInputCollection(winrt::make<implementation::StateMachineInputCollection>());
 	}
 
 	void RivePlayer::OnApplyTemplate()
@@ -114,7 +117,7 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 
 	void RivePlayer::SetBool(winrt::hstring const& name, bool value)
 	{
-		auto utf8Name = Encoding::utf16_to_utf8(name);
+		std::string utf8Name = winrt::to_string(name);
 		if (_deferredSMInputsDuringAsyncSourceLoad)
 		{
 			// A source file is currently loading async. Don't set this input until it completes.
@@ -129,7 +132,7 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 
 	void RivePlayer::SetNumber(winrt::hstring const& name, float value)
 	{
-		auto utf8Name = Encoding::utf16_to_utf8(name);
+		std::string utf8Name = winrt::to_string(name);
 		if (_deferredSMInputsDuringAsyncSourceLoad)
 		{
 			// A source file is currently loading async. Don't set this input until it completes.
@@ -144,7 +147,7 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 
 	void RivePlayer::FireTrigger(winrt::hstring const& name)
 	{
-		auto utf8Name = Encoding::utf16_to_utf8(name);
+		std::string utf8Name = winrt::to_string(name);
 		if (_deferredSMInputsDuringAsyncSourceLoad)
 		{
 			// A source file is currently loading async. Don't set this input until it completes.
@@ -181,9 +184,9 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		winrt::DependencyObject const& d,
 		winrt::DependencyPropertyChangedEventArgs const& e)
 	{
-		auto player = d.try_as<class_type>();
-		auto playerImpl = winrt::get_self<RivePlayer>(player);
-		auto newSourceName = winrt::unbox_value<winrt::hstring>(e.NewValue());
+		const auto player = d.try_as<class_type>();
+		const auto playerImpl = winrt::get_self<RivePlayer>(player);
+		const auto newSourceName = winrt::unbox_value<winrt::hstring>(e.NewValue());
 		// Clear the current Scene while we wait for the new one to load.
 		playerImpl->_renderer->ClearCommands();
 		++playerImpl->_currentSourceToken;  // Cancel any other active async source load operation.
@@ -195,10 +198,10 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 	void RivePlayer::OnArtboardNameChanged(winrt::DependencyObject const& d,
 		winrt::DependencyPropertyChangedEventArgs const& e)
 	{
-		auto player = d.try_as<class_type>();
-		auto playerImpl = winrt::get_self<RivePlayer>(player);
-		auto newArtboardName = winrt::unbox_value<winrt::hstring>(e.NewValue());
-		auto utf8ArtboardName = Encoding::utf16_to_utf8(newArtboardName);
+		const auto player = d.try_as<class_type>();
+		const auto playerImpl = winrt::get_self<RivePlayer>(player);
+		const auto newArtboardName = winrt::unbox_value<winrt::hstring>(e.NewValue());
+		const auto utf8ArtboardName = winrt::to_string(newArtboardName);
 		playerImpl->_artboardName = utf8ArtboardName;
 		if (playerImpl->_deferredSMInputsDuringAsyncSourceLoad)
 		{
@@ -217,10 +220,10 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		winrt::DependencyObject const& d,
 		winrt::DependencyPropertyChangedEventArgs const& e)
 	{
-		auto player = d.try_as<class_type>();
-		auto playerImpl = winrt::get_self<RivePlayer>(player);
-		auto newStateMachineName = winrt::unbox_value<winrt::hstring>(e.NewValue());
-		auto utf8StateMachineName = Encoding::utf16_to_utf8(newStateMachineName);
+		const auto player = d.try_as<class_type>();
+		const auto playerImpl = winrt::get_self<RivePlayer>(player);
+		const auto newStateMachineName = winrt::unbox_value<winrt::hstring>(e.NewValue());
+		const auto utf8StateMachineName = winrt::to_string(newStateMachineName);
 		playerImpl->_stateMachineName = utf8StateMachineName;
 		if (playerImpl->_deferredSMInputsDuringAsyncSourceLoad)
 		{
@@ -240,13 +243,17 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		winrt::DependencyPropertyChangedEventArgs const& e)
 	{
 		// Clear the RivePlayer on the old reference so it quits updating us.
-		auto oldCollection = e.OldValue().try_as<winrt::XamlToolkit::WinUI::Rive::StateMachineInputCollection>();
-		auto oldCollectionImpl = winrt::get_self<implementation::StateMachineInputCollection>(oldCollection);
-		oldCollectionImpl->SetRivePlayer(nullptr);
+		if (const auto oldCollection = e.OldValue().try_as<winrt::XamlToolkit::WinUI::Rive::StateMachineInputCollection>())
+		{
+			const auto oldCollectionImpl = winrt::get_self<implementation::StateMachineInputCollection>(oldCollection);
+			oldCollectionImpl->SetRivePlayer(nullptr);
+		}
 
-		auto newCollection = e.NewValue().try_as<winrt::XamlToolkit::WinUI::Rive::StateMachineInputCollection>();
-		auto newCollectionImpl = winrt::get_self<implementation::StateMachineInputCollection>(newCollection);
-		newCollectionImpl->SetRivePlayer(d.try_as<class_type>());
+		if (const auto newCollection = e.NewValue().try_as<winrt::XamlToolkit::WinUI::Rive::StateMachineInputCollection>())
+		{
+			const auto newCollectionImpl = winrt::get_self<implementation::StateMachineInputCollection>(newCollection);
+			newCollectionImpl->SetRivePlayer(d.try_as<class_type>()); 
+		}
 	}
 
 	static winrt::Uri TryCreate(winrt::hstring const& uriString)
@@ -271,7 +278,7 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		}
 
 		std::vector<uint8_t> data;
-		auto scheme = uri.SchemeName();
+		const auto scheme = uri.SchemeName();
 		if (scheme == L"http" || scheme == L"https")
 		{
 			try
@@ -280,7 +287,7 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 				winrt::HttpResponseMessage response = co_await httpClient.GetAsync(uri);
 				if (response.IsSuccessStatusCode())
 				{
-					auto buffer = co_await response.Content().ReadAsBufferAsync();
+					const auto& buffer = co_await response.Content().ReadAsBufferAsync();
 					data.resize(buffer.Length());
 					std::copy(buffer.data(), buffer.data() + buffer.Length(), data.data());
 				}
@@ -292,17 +299,17 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		}
 		else if (scheme == L"ms-appx")
 		{
-			auto file = co_await winrt::StorageFile::GetFileFromApplicationUriAsync(uri);
-			if (file != nullptr && sourceToken == _currentSourceToken)
+			const auto& file = co_await winrt::StorageFile::GetFileFromApplicationUriAsync(uri);
+			if (file && sourceToken == _currentSourceToken)
 			{
-				auto buffer = co_await winrt::FileIO::ReadBufferAsync(file);
+				const auto& buffer = co_await winrt::FileIO::ReadBufferAsync(file);
 				data.resize(buffer.Length());
 				std::copy(buffer.data(), buffer.data() + buffer.Length(), data.data());
 			}
 		}
 		else if (scheme == L"file")
 		{
-			auto path = Encoding::utf16_to_utf8(uriString);
+			const auto path = winrt::to_string(uriString);
 			if (auto fs = std::ifstream(path, std::ios::binary))
 			{
 				data.assign(std::istreambuf_iterator<char>(fs), {});
@@ -328,7 +335,7 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 	{
 		if (_renderer)
 		{
-			auto viewSize = e.NewSize();
+			const auto viewSize = e.NewSize();
 			_renderer->Resize(static_cast<int>(viewSize.Width), static_cast<int>(viewSize.Height));
 		}
 	}
@@ -337,8 +344,8 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		winrt::IInspectable const& sender,
 		winrt::Input::PointerRoutedEventArgs const& e)
 	{
-		auto uiElement = sender.as<winrt::UIElement>();
-		auto pointerPos = e.GetCurrentPoint(uiElement).Position();
+		const auto uiElement = sender.as<winrt::UIElement>();
+		const auto pointerPos = e.GetCurrentPoint(uiElement).Position();
 		_renderer->PointerMove(pointerPos.X, pointerPos.Y);
 	}
 
@@ -346,8 +353,8 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		winrt::IInspectable const& sender,
 		winrt::Input::PointerRoutedEventArgs const& e)
 	{
-		auto uiElement = sender.as<winrt::UIElement>();
-		auto pointerPos = e.GetCurrentPoint(uiElement).Position();
+		const auto uiElement = sender.as<winrt::UIElement>();
+		const auto pointerPos = e.GetCurrentPoint(uiElement).Position();
 		_renderer->PointerDown(pointerPos.X, pointerPos.Y);
 	}
 
@@ -355,8 +362,8 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		winrt::IInspectable const& sender,
 		winrt::Input::PointerRoutedEventArgs const& e)
 	{
-		auto uiElement = sender.as<winrt::UIElement>();
-		auto pointerPos = e.GetCurrentPoint(uiElement).Position();
+		const auto uiElement = sender.as<winrt::UIElement>();
+		const auto pointerPos = e.GetCurrentPoint(uiElement).Position();
 		_renderer->PointerUp(pointerPos.X, pointerPos.Y);
 	}
 }

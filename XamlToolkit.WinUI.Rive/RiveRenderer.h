@@ -13,7 +13,7 @@
 #endif
 #include <d3d11_1.h>
 #include <dxgi1_2.h>
-#include <rive/renderer/render_context.hpp>
+#include <rive/renderer/texture.hpp>
 #include <rive/renderer/rive_renderer.hpp>
 #include <rive/renderer/d3d11/render_context_d3d_impl.hpp>
 #include <rive/renderer/d3d11/d3d11.hpp>
@@ -24,6 +24,8 @@
 #include <rive/static_scene.hpp>
 
 #include <Microsoft.UI.Xaml.Media.DxInterop.h>
+
+#pragma comment(lib, "dxguid.lib")
 
 namespace winrt::XamlToolkit::WinUI::Rive::implementation
 {

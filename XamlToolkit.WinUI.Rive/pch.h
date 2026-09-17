@@ -25,5 +25,6 @@
 #include <regex>
 #include <set>
 #include <thread>
+#include <variant>
 #include <unordered_map>
 #include <unordered_set>

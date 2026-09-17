@@ -7,15 +7,19 @@ namespace XamlToolkit.WinUI.Rive
     {
         RivePlayer();
 
+        [noexcept]
         static Microsoft.UI.Xaml.DependencyProperty SourceProperty{ get; };
         String Source;
 
+        [noexcept]
         static Microsoft.UI.Xaml.DependencyProperty ArtboardProperty{ get; };
         String Artboard;
 
+        [noexcept]
         static Microsoft.UI.Xaml.DependencyProperty StateMachineProperty{ get; };
         String StateMachine;
 
+        [noexcept]
         static Microsoft.UI.Xaml.DependencyProperty StateMachineInputCollectionProperty{ get; };
         StateMachineInputCollection StateMachineInputCollection;
 

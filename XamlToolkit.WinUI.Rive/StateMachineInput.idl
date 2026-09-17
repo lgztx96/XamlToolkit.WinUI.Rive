@@ -3,6 +3,7 @@ namespace XamlToolkit.WinUI.Rive
     unsealed runtimeclass StateMachineInput : Microsoft.UI.Xaml.DependencyObject
     {
         StateMachineInput();
+
         String Target;
     }
 
@@ -11,6 +12,9 @@ namespace XamlToolkit.WinUI.Rive
     {
         BoolInput();
 
+        [noexcept]
+        static Microsoft.UI.Xaml.DependencyProperty ValueProperty{ get; };
+
         Windows.Foundation.IReference<Boolean> Value;
     }
 
@@ -18,6 +22,9 @@ namespace XamlToolkit.WinUI.Rive
     runtimeclass NumberInput : StateMachineInput
     {
         NumberInput();
+
+        [noexcept]
+        static Microsoft.UI.Xaml.DependencyProperty ValueProperty{ get; };
 
         Windows.Foundation.IReference<Double> Value;
     }
