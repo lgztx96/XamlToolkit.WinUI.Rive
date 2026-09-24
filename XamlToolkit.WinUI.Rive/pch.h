@@ -14,11 +14,17 @@
 #undef GetCurrentTime
 
 // STL headers must be included before import std; to avoid redefinition errors
+#include <algorithm>
 #include <array>
+#include <atomic>
+#include <chrono>
+#include <cmath>
+#include <cstdint>
 #include <deque>
 #include <filesystem>
 #include <functional>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <queue>
 #include <ranges>

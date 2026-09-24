@@ -2,15 +2,46 @@
 
 #ifdef __INTELLISENSE__
 #include <winrt/base.h>
-#include <thread>
-#include <mutex>
+#include <atomic>
 #include <chrono>
-#include <vector>
+#include <memory>
+#include <mutex>
 #include <queue>
-#include <variant>
 #include <string>
 #include <string_view>
+#include <thread>
+#include <variant>
+#include <vector>
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Numerics.h>
+#include <winrt/Windows.Graphics.h>
+#include <winrt/Microsoft.Graphics.DirectX.h>
+#include <winrt/Microsoft.UI.Composition.h>
+#include <winrt/Microsoft.UI.Dispatching.h>
+#include <winrt/Microsoft.UI.Xaml.h>
+#include <winrt/Microsoft.UI.Xaml.Hosting.h>
 #endif
+
+#ifdef WINRT_IMPORT_MODULE
+// The renderer uses the composition projection directly; import it here too so
+// the header is self contained no matter which translation unit pulls it in.
+import winrt.Windows.Foundation.Numerics;
+import winrt.Windows.Graphics;
+import winrt.Microsoft.Graphics.DirectX;
+import winrt.Microsoft.UI.Composition;
+import winrt.Microsoft.UI.Dispatching;
+import winrt.Microsoft.UI.Xaml;
+import winrt.Microsoft.UI.Xaml.Hosting;
+#else
+#include <winrt/Windows.Foundation.Numerics.h>
+#include <winrt/Windows.Graphics.h>
+#include <winrt/Microsoft.Graphics.DirectX.h>
+#include <winrt/Microsoft.UI.Composition.h>
+#include <winrt/Microsoft.UI.Dispatching.h>
+#include <winrt/Microsoft.UI.Xaml.h>
+#include <winrt/Microsoft.UI.Xaml.Hosting.h>
+#endif
+
 #include <d3d11_1.h>
 #include <dxgi1_2.h>
 #include <rive/renderer/texture.hpp>
@@ -23,17 +54,18 @@
 #include <rive/animation/state_machine_instance.hpp>
 #include <rive/static_scene.hpp>
 
-#include <Microsoft.UI.Xaml.Media.DxInterop.h>
+// The interop projection for composition drawing surfaces is hand written and
+// lives outside the winrt.* modules, so it is always included textually.
+#include <winrt/Microsoft.UI.Composition.Interop.h>
 
 #pragma comment(lib, "dxguid.lib")
 
 namespace winrt::XamlToolkit::WinUI::Rive::implementation
 {
-    struct ResizeViewCommand { int width, height; };
     struct LoadRivCommand { std::vector<uint8_t> data; };
     struct SelectArtboardCmd { std::string name; };
     struct SelectStateMachineCmd { std::string name; };
-    struct PointerCommand { float x, y; enum class Kind { Move, Down, Up } kind; };
+    struct PointerCommand { float x, y; enum class Kind { Move, Down, Up, Exit } kind; };
     struct InputCommand
     {
         enum class Kind { Bool, Number, Trigger };
@@ -43,37 +75,41 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
     };
 
     using Command = std::variant<
-        ResizeViewCommand,
         LoadRivCommand,
         SelectArtboardCmd,
         SelectStateMachineCmd,
         PointerCommand,
         InputCommand>;
 
-    class RiveRenderer final
+    class RiveRenderer final : public std::enable_shared_from_this<RiveRenderer>
     {
     public:
         RiveRenderer();
         ~RiveRenderer();
 
-        bool Initialize(winrt::com_ptr<ISwapChainPanelNative> const& panel, int width, int height);
+        bool Attach(winrt::Microsoft::UI::Xaml::UIElement const& host);
+
+        void UpdateSurface();
+
+        void Detach();
+
         void Start();
         void Stop();
         void Pause();
         void Resume();
 
-        void Resize(int width, int height);
         void LoadFileData(std::vector<uint8_t> data);
-        void SelectArtboard(std::string_view name);
-        void SelectStateMachine(std::string_view name);
+        void SelectArtboard(std::string name);
+        void SelectStateMachine(std::string name);
 
-        void SetBoolInput(std::string_view name, bool value);
-        void SetNumberInput(std::string_view name, float value);
-        void FireTrigger(std::string_view name);
+        void SetBoolInput(std::string name, bool value);
+        void SetNumberInput(std::string name, float value);
+        void FireTrigger(std::string name);
 
         void PointerMove(float x, float y);
         void PointerDown(float x, float y);
         void PointerUp(float x, float y);
+        void PointerExit(float x, float y);
 
         void Enqueue(Command&& cmd);
 
@@ -83,8 +119,17 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
         void RenderLoop(std::stop_token token);
         void ProcessCommands();
         bool TryRenderFrame(float dt);
+
         void CreateDeviceResources();
-        void HandleDeviceLost();
+        void CreateCompositionResources();
+        void ClearSurface();
+        void EnsureFrameResources(int32_t width, int32_t height, DXGI_FORMAT format);
+        void ReleaseFrameResources();
+        void ReleaseDeviceResources();
+        void ReleaseCompositionResources();
+
+        void QueueReinitialize();
+        void Reinitialize();
 
         void CreateRiveFile(std::span<const uint8_t> data);
         void OnArtboardChanged();
@@ -93,24 +138,41 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
         bool TransformPoint(float& x, float& y) const;
 
     private:
-        winrt::com_ptr<ISwapChainPanelNative> _panelNative{ nullptr };
-        int _viewWidth{};
-        int _viewHeight{};
+#pragma region UIThreadState
+        winrt::Microsoft::UI::Xaml::UIElement _host{ nullptr };
+        winrt::Microsoft::UI::Composition::ICompositionGraphicsDevice _graphicsDevice{ nullptr };
+        winrt::Microsoft::UI::Composition::CompositionDrawingSurface _surface{ nullptr };
+        winrt::Microsoft::UI::Composition::CompositionSurfaceBrush _surfaceBrush{ nullptr };
+        winrt::Microsoft::UI::Composition::SpriteVisual _surfaceVisual{ nullptr };
+        winrt::Microsoft::UI::Dispatching::DispatcherQueue _uiDispatcher{ nullptr };
+        std::atomic<int> _reinitializeAttempts{ 0 };
+#pragma endregion
 
+#pragma region Shared
+        std::mutex _surfaceMutex;
+        winrt::com_ptr<winrt::Microsoft::UI::Composition::ICompositionDrawingSurfaceInterop> _surfaceInterop;
+        int32_t _surfacePixelWidth{ 0 };
+        int32_t _surfacePixelHeight{ 0 };
+#pragma endregion
+
+#pragma region RenderThreadState
         std::queue<Command> _commands;
         std::mutex _commandsMutex;
         std::unique_ptr<std::jthread> _renderThread;
 
-        std::atomic<bool> _paused{ false };
-
         winrt::com_ptr<ID3D11Device> _device;
         winrt::com_ptr<ID3D11DeviceContext> _context;
-        winrt::com_ptr<IDXGIFactory2> _factory;
-        winrt::com_ptr<IDXGISwapChain1> _swapChain;
+        winrt::com_ptr<IDXGIDevice> _dxgiDevice;
 
         std::unique_ptr<rive::gpu::RenderContext> _renderContext;
         std::unique_ptr<rive::RiveRenderer> _renderer;
         rive::rcp<rive::gpu::RenderTargetD3D> _renderTarget;
+
+        // Rive's own render target: the surface never sees a partial frame.
+        winrt::com_ptr<ID3D11Texture2D> _frameTexture;
+        int32_t _frameWidth{ 0 };
+        int32_t _frameHeight{ 0 };
+        DXGI_FORMAT _frameFormat{ DXGI_FORMAT_UNKNOWN };
 
         rive::rcp<rive::File> _rivFile;
         std::unique_ptr<rive::ArtboardInstance> _artboard;
@@ -118,8 +180,14 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
         rive::StateMachineInstance* _activeStateMachine{ nullptr };
 
         rive::Mat2D _viewTransform{};
-        bool _layoutDirty{ true };
 
         std::chrono::high_resolution_clock::time_point _lastFrameTime;
+
+        // Pointer input arrives in DIPs; physical pixels per DIP.
+        std::atomic<float> _rasterizationScale{ 1.0f };
+        std::atomic<bool> _layoutDirty{ true };
+        std::atomic<bool> _deviceLost{ false };
+        std::atomic<bool> _paused{ false };
+#pragma endregion
     };
 }

@@ -7,15 +7,17 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Microsoft.UI.Xaml.h>
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
+#include <winrt/Microsoft.UI.Xaml.Input.h>
 #include <winrt/XamlToolkit.WinUI.Rive.h>
 #endif
 #include "RiveRenderer.h"
 
-namespace winrt 
+namespace winrt
 {
-	using namespace Windows::Foundation;
-	using namespace Microsoft::UI::Xaml;
-	using namespace Microsoft::UI::Xaml::Controls;
+	using namespace ::winrt::Windows::Foundation;
+	using namespace ::winrt::Microsoft::UI::Xaml;
+	using namespace ::winrt::Microsoft::UI::Xaml::Input;
+	using namespace ::winrt::Microsoft::UI::Xaml::Controls;
 }
 
 namespace winrt::XamlToolkit::WinUI::Rive::implementation
@@ -58,8 +60,14 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 
 	private:
 		std::unique_ptr<RiveRenderer> _renderer;
-		winrt::SwapChainPanel _swapChainPanel{ nullptr };
-		static constexpr std::wstring_view ContainerVisualName = L"RiveSwapChain";
+		winrt::UIElement _hostElement{ nullptr };
+		winrt::XamlRoot _xamlRoot{ nullptr };
+		winrt::event_token _xamlRootChangedToken{};
+		bool _xamlRootSubscribed{ false };
+		// True between a forwarded down and its matching up, so an interrupted
+		// press is only closed once.
+		bool _pointerDown{ false };
+		static constexpr std::wstring_view ContainerVisualName = L"RiveVisualHost";
 		int _currentSourceToken = 0;
 
 		std::string _artboardName;
@@ -92,17 +100,43 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 			winrt::IInspectable const& sender,
 			winrt::SizeChangedEventArgs const& e);
 
+		void HandleXamlRootChangedEvent(
+			winrt::XamlRoot const& sender,
+			winrt::XamlRootChangedEventArgs const& args);
+
 		void HandlePointerMovedEvent(
 			winrt::IInspectable const& sender,
-			winrt::Input::PointerRoutedEventArgs const& e);
+			winrt::PointerRoutedEventArgs const& e);
+
+		void HandlePointerEnteredEvent(
+			winrt::IInspectable const& sender,
+			winrt::PointerRoutedEventArgs const& e);
+
+		void HandlePointerExitedEvent(
+			winrt::IInspectable const& sender,
+			winrt::PointerRoutedEventArgs const& e);
 
 		void HandlePointerPressedEvent(
-			winrt::IInspectable const&,
-			winrt::Input::PointerRoutedEventArgs const& e);
+			winrt::IInspectable const& sender,
+			winrt::PointerRoutedEventArgs const& e);
 
 		void HandlePointerReleasedEvent(
-			winrt::IInspectable const&,
-			winrt::Input::PointerRoutedEventArgs const& e);
+			winrt::IInspectable const& sender,
+			winrt::PointerRoutedEventArgs const& e);
+
+		void HandlePointerCaptureLostEvent(
+			winrt::IInspectable const& sender,
+			winrt::PointerRoutedEventArgs const& e);
+
+		void HandlePointerCanceledEvent(
+			winrt::IInspectable const& sender,
+			winrt::PointerRoutedEventArgs const& e);
+
+		// Forwards an up for a press that will never get a Released, so the
+		// runtime cannot be left believing the pointer is still held down.
+		void EndInterruptedPress(
+			winrt::IInspectable const& sender,
+			winrt::PointerRoutedEventArgs const& e);
 	};
 }
 

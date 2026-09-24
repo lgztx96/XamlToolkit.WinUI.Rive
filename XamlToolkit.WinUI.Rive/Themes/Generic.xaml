@@ -6,14 +6,15 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:RivePlayer">
-                    <SwapChainPanel
-                        x:Name="RiveSwapChain"
+                    <Grid
+                        x:Name="RiveVisualHost"
                         Padding="{TemplateBinding Padding}"
                         AutomationProperties.AccessibilityView="Raw"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
-                    </SwapChainPanel>
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Background="{TemplateBinding Background}">
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
