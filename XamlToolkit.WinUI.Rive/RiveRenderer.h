@@ -44,6 +44,8 @@ import winrt.Microsoft.UI.Xaml.Hosting;
 
 #include <d3d11_1.h>
 #include <dxgi1_2.h>
+#pragma warning(push)
+#pragma warning(disable: 4100 4201 4244 4245 4267 4458)
 #include <rive/renderer/texture.hpp>
 #include <rive/renderer/rive_renderer.hpp>
 #include <rive/renderer/d3d11/render_context_d3d_impl.hpp>
@@ -53,7 +55,7 @@ import winrt.Microsoft.UI.Xaml.Hosting;
 #include <rive/animation/linear_animation_instance.hpp>
 #include <rive/animation/state_machine_instance.hpp>
 #include <rive/static_scene.hpp>
-
+#pragma warning(pop)
 // The interop projection for composition drawing surfaces is hand written and
 // lives outside the winrt.* modules, so it is always included textually.
 #include <winrt/Microsoft.UI.Composition.Interop.h>
