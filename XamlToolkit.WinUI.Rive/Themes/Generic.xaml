@@ -1,22 +1,5 @@
-<ResourceDictionary
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:XamlToolkit.WinUI.Rive">
-    <Style TargetType="local:RivePlayer">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="local:RivePlayer">
-                    <Grid
-                        x:Name="RiveVisualHost"
-                        Padding="{TemplateBinding Padding}"
-                        AutomationProperties.AccessibilityView="Raw"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}"
-                        Background="{TemplateBinding Background}">
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="ms-appx:///XamlToolkit.WinUI.Rive/RivePlayer.xaml" />
+    </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

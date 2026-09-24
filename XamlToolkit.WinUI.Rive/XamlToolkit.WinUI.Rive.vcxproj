@@ -223,6 +223,7 @@
     </Midl>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="RivePlayer.xaml" />
     <Page Include="Themes\Generic.xaml" />
   </ItemGroup>
   <!-- XAML wrapper pattern: replace generated .cpp files with module-aware wrappers -->

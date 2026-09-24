@@ -22,7 +22,7 @@ namespace winrt
 
 namespace winrt::XamlToolkit::WinUI::Rive::implementation
 {
-	struct RivePlayer : RivePlayerT<RivePlayer>
+	struct RivePlayer : RivePlayer_base<RivePlayer>
 	{
 		RivePlayer();
 
