@@ -336,8 +336,8 @@ namespace winrt::XamlToolkit::WinUI::Rive::implementation
 		}
 		else if (scheme == L"file")
 		{
-			const auto path = winrt::to_string(uriString);
-			if (auto fs = std::ifstream(path, std::ios::binary | std::ios::ate))
+			std::filesystem::path filePath{ uri.Path().data() + 1 };
+			if (auto fs = std::ifstream(filePath, std::ios::binary | std::ios::ate))
 			{
 				const auto size = fs.tellg();
 				data.resize(static_cast<size_t>(size));
